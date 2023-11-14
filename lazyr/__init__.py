@@ -1,7 +1,7 @@
 import importlib
 import inspect
 import sys
-from typing import TYPE_CHECKING, Any, List, Literal, Optional
+from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -82,7 +82,7 @@ class LazyModule:
 
         """
         self.__name = name
-        self.__ignored = {} if ignore is None else set(ignore)
+        self.__ignored: Set[str] = set() if ignore is None else set(ignore)
         self.__verbose = verbose
         self.__module: Optional[ModuleType] = None
 
@@ -106,7 +106,7 @@ class LazyModule:
         return getattr(self.__module, __name)
 
     def _LazyModule_ignore(self, ignore: Optional[List[str]] = None) -> None:
-        self.__ignored |= {} if ignore is None else set(ignore)
+        self.__ignored |= set() if ignore is None else set(ignore)
 
     def __import_module(self) -> bool:
         res: bool = False
