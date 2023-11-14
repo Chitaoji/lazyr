@@ -13,7 +13,7 @@ from setuptools import Command, find_packages, setup
 
 # Package meta-data.
 NAME = "lazyr"
-DESCRIPTION = "Makes lazy modules in a more readable and friendly way.."
+DESCRIPTION = "Makes lazy modules in a more readable and friendly way."
 URL = "https://github.com/Chitaoji/dataplot"
 EMAIL = "2360742040@qq.com"
 AUTHOR = "Chitaoji"
