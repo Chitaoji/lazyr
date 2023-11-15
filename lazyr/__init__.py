@@ -96,11 +96,11 @@ class LazyModule:
         self.__debug_access(__name)
         if self.__module is None:
             if __name in self.__skipped:
-                return NotImplemented
+                return None
             if __name in self.__ignored:
                 if (module_name := f"{self.__name}.{__name}") in sys.modules:
                     return sys.modules[module_name]
-                return NotImplemented
+                return None
             if self.__import_module():
                 self.__debug_import(__name)
         return getattr(self.__module, __name)
