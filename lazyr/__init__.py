@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set
 if TYPE_CHECKING:
     from types import ModuleType
 
-__all__ = ["register"]
+__all__ = ["register", "wakeup"]
 
 
 def register(
@@ -16,20 +16,21 @@ def register(
     verbose: Literal[0, 1, 2, 3] = 0,
 ) -> "ModuleType":
     """
-    Register a module as a lazy one, which is only imported when its attributes are
-    being accessed.
+    Register a module as a lazy one. A lazy module is not physically imported in the
+    Python environment until its attributes are being accessed, or compulsively
+    activated by the user.
 
     Parameters
     ----------
     name : str
-        Name of the module.
+        Name of the registerd module.
     package : Optional[str], optional
         Required when performing a relative import. It specifies the package to use
         as the anchor point from which to resolve the relative import to an absolute
         import, by default None.
     ignore : Optional[List[str]], optional
-        Specified the ignored attrbutes. When an ignored attribute is accessed, the
-        module will still remain unimported. By default None.
+        Specifies the ignored attrbutes of the lazy module. When an ignored attribute
+        is accessed, the lazy module will still remain inactivated. By default None.
     verbose : Literal[0, 1, 2, 3], optional
         Specifies the level of verbosity for debugging. It accepts values from 0 to 3.
         By default 0.
@@ -50,7 +51,7 @@ def register(
             module_name, ignore=ignore, verbose=verbose
         )
     elif isinstance(m := sys.modules[module_name], LazyModule):
-        m._LazyModule_ignore(ignore)
+        getattr(m, "_LazyModule__ignore_submodules")(ignore)
     return sys.modules[module_name]
 
 
@@ -62,6 +63,11 @@ def __join_module_name(name: str, package: Optional[str] = None):
             f"expected a relative import when the `package` argument is provided, got '{name}' instead"
         )
     return package + name
+
+
+def wakeup(module: "ModuleType"):
+    if isinstance(module, LazyModule):
+        getattr(module, "!wakeup")
 
 
 class LazyModule:
@@ -82,7 +88,8 @@ class LazyModule:
 
         """
         self.__name = name
-        self.__ignored: Set[str] = set() if ignore is None else set(ignore)
+        self.__ignored: Set[str] = set()
+        self.__ignore_submodules(ignore)
         self.__verbose = verbose
         self.__module: Optional[ModuleType] = None
 
@@ -103,10 +110,11 @@ class LazyModule:
                 return None
             if self.__import_module():
                 self.__debug_import(__name)
-        return getattr(self.__module, __name)
+        return None if __name.startswith("!") else getattr(self.__module, __name)
 
-    def _LazyModule_ignore(self, ignore: Optional[List[str]] = None) -> None:
-        self.__ignored |= set() if ignore is None else set(ignore)
+    def __ignore_submodules(self, ignore: Optional[List[str]] = None) -> None:
+        if ignore is not None:
+            self.__ignored |= set(ignore)
 
     def __import_module(self) -> bool:
         res: bool = False
