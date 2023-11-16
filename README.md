@@ -12,6 +12,7 @@ Let *pandas* be a lazy module, for example:
 
 ```py
 import lazyr
+
 lazyr.register("pandas") # pandas is a lazy module from now on
 
 import pandas as pd
@@ -27,6 +28,7 @@ There is also a simpler way to create a lazy module, but may cause *type hints* 
 
 ```py
 import lazyr
+
 pd = lazyr.register("pandas") # pandas is a lazy module from now on
 print(pd)
 # Output: LazyModule(pandas, ignore=set())
@@ -47,7 +49,7 @@ Remember that leaving a lazy module inactivated *forever* may be **very** danger
 ```py
 lazyr.register("pandas")
 
-from pandas.io.formats.style import Styler # Oops, submodules of submodules of a lazy module are not accessable
+from pandas.io.formats.style import Styler # Oops
 # ModuleNotFoundError: No module named 'pandas.io.formats'; 'pandas.io' is not a package
 ```
 
@@ -59,11 +61,12 @@ lazyr.register("pandas")
 from pandas import io # This is ok, and pandas will be loaded
 ```
 
-This is because the lazy modules tried to be as 'lazy' as possible, and overrided their submodules. One way to fix this is by using `wakeup()`:
+This is because a lazy module tried to be as 'lazy' as possible, and overrided its submodules, so that the submodules of submodules of it are not accessable. One way to fix this is by using `wakeup()`:
 
 ```py
 pd = lazyr.register("pandas")
 lazyr.wakeup(pd)
+
 from pandas.io.formats.style import Styler # Fine now
 ```
 
