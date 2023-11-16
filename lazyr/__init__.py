@@ -122,13 +122,13 @@ class LazyModule:
             return getattr(self, f"_{self.__class__.__name__}__{__name[1:]}")
         self.__debug_access(__name)
         if self.__module is None:
-            if not sys._getframe(1).f_code.co_name == "_find_and_load_unlocked":
-                if __name in self.__skipped:
+            if __name in self.__skipped:
+                if not sys._getframe(1).f_code.co_name == "_find_and_load_unlocked":
                     return None
-                if __name in self.__ignored_attrs:
-                    if (module_name := f"{self.__name}.{__name}") in sys.modules:
-                        return sys.modules[module_name]
-                    return None
+            elif __name in self.__ignored_attrs:
+                if (module_name := f"{self.__name}.{__name}") in sys.modules:
+                    return sys.modules[module_name]
+                return None
             self.__wakeup(__name)
         return getattr(self.__module, __name)
 
