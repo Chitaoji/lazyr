@@ -88,11 +88,6 @@ def safe() -> None:
     A context manager to create a 'safe' space for lazy modules, so that modules are
     no longer lazy outside the space.
 
-    Yields
-    ------
-    NoneType
-        None.
-
     """
     setattr(LazyModule, "_LazyModule__safe", True)
     yield None
