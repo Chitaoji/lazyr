@@ -1,5 +1,7 @@
 # lazyr
-Creates lazy modules in a more readable and safer way.
+Creates lazily-imported modules in a more readable and safer way.
+
+A lazily-imported module (or a lazy module, to be short) is  not physically loaded in the Python environment until its attributes are being accessed. This could be very useful when you are importing some modules that are hardly used but take a lot of time to be loaded.
 
 ## Installation
 
@@ -27,60 +29,17 @@ print(df)
 There is also a simpler way to create a lazy module, but may cause *type hints* to lose efficacy:
 
 ```py
-import lazyr
-
-pd = lazyr.register("pandas") # pandas is a lazy module from now on
+pd = lazyr.register("pandas")
 print(pd)
 # Output: LazyModule(pandas, ignore=set())
 ```
 
 ### Wake up a module
 
-Sometimes you may want to activate a lazy module without excessing any of its attributes, you can wake up it like this:
+The lazy modules are not actually loaded until their attrubutes are imported or used, but sometimes you may want to activate a lazy module without excessing any of its attributes. In this case, you can wake up it like this:
 
 ```py
-lazyr.wakeup(pd) # pandas is no longer lazy
-```
-
-### Safe space
-
-When you are developing a module yourself, leaving a lazy import inactivated *forever* may be **very** dangerous, because other users who import from your module may be unaware of that, and thus get surprising bugs. For example, the following codes will cause an error:
-
-```py
-lazyr.register("pandas")
-
-from pandas.io.formats.style import Styler # Oops
-# ModuleNotFoundError: No module named 'pandas.io.formats'; 'pandas.io' is not a package
-```
-
-Compared to:
-
-```py
-lazyr.register("pandas")
-
-from pandas import io # This is ok, and pandas will be loaded
-```
-
-This is because a lazy module is not loaded immediately when its name appears in the program, so that the submodules of submodules of it are not accessable. One way to fix this is by using `wakeup()`:
-
-```py
-pd = lazyr.register("pandas")
-lazyr.wakeup(pd)
-
-from pandas.io.formats.style import Styler # Fine now
-```
-
-But this may be very boring, since if you may need to wake up every unused lazy module at the end of your own python file (in order not to cause problems for others who import your file).
-
-A more beautiful way is to use `safe()`:
-
-```py
-with lazyr.safe():
-    # Create and import lazy modules inside the 'safe' space
-    lazyr.register("pandas")
-
-# Modules are less 'lazy' outside the 'safe' space 
-from pandas.io.formats.style import Styler # Fine now
+lazyr.wakeup(pd) # pandas is no longer lazy now
 ```
 
 ## See Also
@@ -96,7 +55,7 @@ This project falls under the BSD 2-Clause License.
 ## History
 
 ### v0.0.2
-* Added new features `lazyr.wakeup` and `lazyr.safe`.
+* Added the feature `lazyr.wakeup`.
 
 ### v0.0.1
 * Initial release.

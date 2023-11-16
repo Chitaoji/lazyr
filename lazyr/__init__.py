@@ -1,3 +1,7 @@
+"""
+Creates lazy modules in a more readable and safer way.
+
+"""
 import importlib
 import inspect
 import logging
@@ -24,7 +28,7 @@ def register(
     Parameters
     ----------
     name : str
-        Name of the registerd module.
+        Name of the module to be registerd.
     package : Optional[str], optional
         Required when performing a relative import. It specifies the package to use
         as the anchor point from which to resolve the relative import to an absolute
@@ -39,7 +43,7 @@ def register(
     Returns
     -------
     ModuleType
-        The registered lazy module.
+        The lazy module.
 
     Raises
     ------
@@ -69,7 +73,7 @@ got '{name}' instead"
 
 def wakeup(module: "ModuleType"):
     """
-    Compulsively activates a lazy module, loading it as a normal one.
+    Compulsively activates a lazy module by loading it as a normal one.
 
     Parameters
     ----------
@@ -82,6 +86,11 @@ def wakeup(module: "ModuleType"):
 
 
 class LazyModule:
+    """
+    A lazy module.
+
+    """
+
     __skipped: Set = {
         "__spec__",
         "__path__",
@@ -94,10 +103,6 @@ class LazyModule:
         ignore: Optional[List[str]] = None,
         verbose: Literal[0, 1, 2, 3] = 0,
     ) -> None:
-        """
-        A lazy module.
-
-        """
         self.__name = name
         self.__ignored_attrs: Set[str] = set()
         self.__ignore(ignore)
