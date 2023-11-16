@@ -72,7 +72,7 @@ from pandas.io.formats.style import Styler # Fine now
 
 But this may be very boring, since you may need to wake up every unused lazy module at the end of your own python file (in order not to cause problems for others who import your file).
 
-A more beautiful way is to use `sefe()`:
+A more beautiful way is to use `safe()`:
 
 ```py
 with lazyr.safe():
