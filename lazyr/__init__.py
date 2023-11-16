@@ -2,14 +2,13 @@ import importlib
 import inspect
 import logging
 import sys
+from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set
 
 if TYPE_CHECKING:
     from types import ModuleType
 
-__all__ = ["register", "wakeup"]
-
-# logging.basicConfig(level=logging.DEBUG)
+__all__ = ["register", "wakeup", "safe"]
 
 
 def register(
@@ -63,7 +62,8 @@ def __join_module_name(name: str, package: Optional[str] = None):
         package = ""
     elif not name.startswith("."):
         raise TypeError(
-            f"expected a relative import when the `package` argument is provided, got '{name}' instead"
+            f"expected a relative import when the `package` argument is provided, \
+got '{name}' instead"
         )
     return package + name
 
@@ -82,8 +82,26 @@ def wakeup(module: "ModuleType"):
         getattr(module, "!wakeup")()
 
 
+@contextmanager
+def safe() -> None:
+    """
+    A context manager to create a 'safe' space for lazy modules, so that modules are
+    no longer lazy outside the space.
+
+    Yields
+    ------
+    NoneType
+        None.
+
+    """
+    setattr(LazyModule, "_LazyModule__safe", True)
+    yield None
+    setattr(LazyModule, "_LazyModule__safe", False)
+
+
 class LazyModule:
-    __skipped = {
+    __safe: bool = True
+    __skipped: Set = {
         "__spec__",
         "__path__",
         "_ipython_canary_method_should_not_exist_",
@@ -118,12 +136,13 @@ class LazyModule:
             return getattr(self, f"_{self.__class__.__name__}__{__name[1:]}")
         self.__debug_access(__name)
         if self.__module is None:
-            if __name in self.__skipped:
-                return None
-            if __name in self.__ignored_attrs:
-                if (module_name := f"{self.__name}.{__name}") in sys.modules:
-                    return sys.modules[module_name]
-                return None
+            if self.__safe:
+                if __name in self.__skipped:
+                    return None
+                if __name in self.__ignored_attrs:
+                    if (module_name := f"{self.__name}.{__name}") in sys.modules:
+                        return sys.modules[module_name]
+                    return None
             self.__wakeup(__name)
         return getattr(self.__module, __name)
 
@@ -150,14 +169,14 @@ class LazyModule:
 
     def __debug_access(self, __name: str) -> None:
         if self.__verbose >= 2:
-            logging.debug(
+            logging.warning(
                 "accessing `%s.%s`%s", self.__name, __name, self.__get_frame_info(3)
             )
 
     def __debug_import(self, __name: str) -> None:
         if self.__verbose >= 1:
-            logging.debug(
-                "`%s` is imported with attribute `%s`%s",
+            logging.warning(
+                "`%s` is loaded with attribute `%s`%s",
                 self.__name,
                 __name,
                 self.__get_frame_info(4),
