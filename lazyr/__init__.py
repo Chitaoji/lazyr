@@ -62,8 +62,8 @@ def register(
 
 def __join_module_name(name: str, package: Optional[str] = None):
     if package is None:
-        package = ""
-    elif not name.startswith("."):
+        return name
+    if not name.startswith("."):
         raise TypeError(
             f"expected a relative import when the `package` argument is provided, \
 got '{name}' instead"
