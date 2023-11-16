@@ -16,7 +16,7 @@ def register(
     verbose: Literal[0, 1, 2, 3] = 0,
 ) -> "ModuleType":
     """
-    Register a module as a lazy one. A lazy module is not physically imported in the
+    Register a module as a lazy one. A lazy module is not physically loaded in the
     Python environment until its attributes are being accessed, or compulsively
     activated by the user.
 
@@ -38,7 +38,7 @@ def register(
     Returns
     -------
     ModuleType
-        The registered module. Use it as a normal one.
+        The registered lazy module.
 
     Raises
     ------
@@ -51,7 +51,7 @@ def register(
             module_name, ignore=ignore, verbose=verbose
         )
     elif isinstance(m := sys.modules[module_name], LazyModule):
-        getattr(m, "_LazyModule__ignore_submodules")(ignore)
+        getattr(m, "!ignore")(ignore)
     return sys.modules[module_name]
 
 
@@ -66,8 +66,17 @@ def __join_module_name(name: str, package: Optional[str] = None):
 
 
 def wakeup(module: "ModuleType"):
+    """
+    Compulsively activates a lazy module, loading it as a normal one.
+
+    Parameters
+    ----------
+    module : ModuleType
+        The module to be activated.
+
+    """
     if isinstance(module, LazyModule):
-        getattr(module, "!wakeup")
+        getattr(module, "!wakeup")()
 
 
 class LazyModule:
@@ -88,8 +97,8 @@ class LazyModule:
 
         """
         self.__name = name
-        self.__ignored: Set[str] = set()
-        self.__ignore_submodules(ignore)
+        self.__ignored_attrs: Set[str] = set()
+        self.__ignore(ignore)
         self.__verbose = verbose
         self.__module: Optional[ModuleType] = None
 
@@ -97,24 +106,31 @@ class LazyModule:
             register(p, ignore=[self.__get_suffix()], verbose=verbose)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.__name}, ignore={self.__ignored})"
+        return (
+            f"{self.__class__.__name__}({self.__name}, ignore={self.__ignored_attrs})"
+        )
 
     def __getattr__(self, __name: str) -> Any:
+        if __name.startswith("!"):
+            return getattr(self, f"_{self.__class__.__name__}__{__name[1:]}")
         self.__debug_access(__name)
         if self.__module is None:
             if __name in self.__skipped:
                 return None
-            if __name in self.__ignored:
+            if __name in self.__ignored_attrs:
                 if (module_name := f"{self.__name}.{__name}") in sys.modules:
                     return sys.modules[module_name]
                 return None
-            if self.__import_module():
-                self.__debug_import(__name)
-        return None if __name.startswith("!") else getattr(self.__module, __name)
+            self.__wakeup(__name)
+        return getattr(self.__module, __name)
 
-    def __ignore_submodules(self, ignore: Optional[List[str]] = None) -> None:
+    def __wakeup(self, __name: Optional[str] = None) -> None:
+        if self.__import_module():
+            self.__debug_import("__wakeup" if __name is None else __name)
+
+    def __ignore(self, ignore: Optional[List[str]] = None) -> None:
         if ignore is not None:
-            self.__ignored |= set(ignore)
+            self.__ignored_attrs |= set(ignore)
 
     def __import_module(self) -> bool:
         res: bool = False
@@ -131,18 +147,18 @@ class LazyModule:
 
     def __debug_access(self, __name: str) -> None:
         if self.__verbose >= 2:
-            print(f"accessing `{self.__name}.{__name}`{self.__get_frame_info()}")
+            print(f"accessing `{self.__name}.{__name}`{self.__get_frame_info(3)}")
 
     def __debug_import(self, __name: str) -> None:
         if self.__verbose >= 1:
             print(
-                f"`{self.__name}` is imported with attribute `{__name}`{self.__get_frame_info()}"
+                f"`{self.__name}` is imported with attribute `{__name}`{self.__get_frame_info(4)}"
             )
 
-    def __get_frame_info(self) -> str:
+    def __get_frame_info(self, depth: int) -> str:
         if self.__verbose < 3:
             return ""
-        f = inspect.stack()[3]
+        f = inspect.stack()[depth]
         return (
             f" by '{f[1]}' -> {f[4][0].strip() if isinstance(f[4], list) else None!r}"
         )
