@@ -2,13 +2,12 @@ import importlib
 import inspect
 import logging
 import sys
-from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set
 
 if TYPE_CHECKING:
     from types import ModuleType
 
-__all__ = ["register", "wakeup", "safe"]
+__all__ = ["register", "wakeup"]
 
 
 def register(
@@ -82,20 +81,7 @@ def wakeup(module: "ModuleType"):
         getattr(module, "!wakeup")()
 
 
-@contextmanager
-def safe() -> None:
-    """
-    A context manager to create a 'safe' space for lazy modules, so that modules are
-    no longer lazy outside the space.
-
-    """
-    setattr(LazyModule, "_LazyModule__safe", True)
-    yield None
-    setattr(LazyModule, "_LazyModule__safe", False)
-
-
 class LazyModule:
-    __safe: bool = True
     __skipped: Set = {
         "__spec__",
         "__path__",
@@ -131,7 +117,7 @@ class LazyModule:
             return getattr(self, f"_{self.__class__.__name__}__{__name[1:]}")
         self.__debug_access(__name)
         if self.__module is None:
-            if self.__safe:
+            if not sys._getframe(1).f_code.co_name == "_find_and_load_unlocked":
                 if __name in self.__skipped:
                     return None
                 if __name in self.__ignored_attrs:
@@ -181,9 +167,7 @@ class LazyModule:
         if self.__verbose < 3:
             return ""
         f = inspect.stack()[depth]
-        return (
-            f" by '{f[1]}' -> {f[4][0].strip() if isinstance(f[4], list) else None!r}"
-        )
+        return f" by '{f[1]}': {f[3]}: {f[4][0].strip() if isinstance(f[4], list) else None!r}"
 
     def __get_family(self) -> List[str]:
         names: List[str] = []

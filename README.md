@@ -44,7 +44,7 @@ lazyr.wakeup(pd) # pandas is no longer lazy
 
 ### Safe space
 
-Remember that leaving a lazy module inactivated *forever* may be **very** dangerous, for example, the following codes will cause an error:
+When you are developing a module yourself, leaving a lazy import inactivated *forever* may be **very** dangerous, because other users who import from your module may be unaware of that, and thus get surprising bugs. For example, the following codes will cause an error:
 
 ```py
 lazyr.register("pandas")
@@ -61,7 +61,7 @@ lazyr.register("pandas")
 from pandas import io # This is ok, and pandas will be loaded
 ```
 
-This is because a lazy module tried to be as 'lazy' as possible, and overrided its submodules, so that the submodules of submodules of it are not accessable. One way to fix this is by using `wakeup()`:
+This is because a lazy module is not loaded immediately when its name appears in the program, so that the submodules of submodules of it are not accessable. One way to fix this is by using `wakeup()`:
 
 ```py
 pd = lazyr.register("pandas")
@@ -70,7 +70,7 @@ lazyr.wakeup(pd)
 from pandas.io.formats.style import Styler # Fine now
 ```
 
-But this may be very boring, since you may need to wake up every unused lazy module at the end of your own python file (in order not to cause problems for others who import your file).
+But this may be very boring, since if you may need to wake up every unused lazy module at the end of your own python file (in order not to cause problems for others who import your file).
 
 A more beautiful way is to use `safe()`:
 
