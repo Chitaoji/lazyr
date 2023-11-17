@@ -56,7 +56,7 @@ This project falls under the BSD 2-Clause License.
 ## History
 
 ### v0.0.4
-* Lazy modules no longer activated by *\_ipython_\** or *\_repr_\** methods.
+* `LazyModule` no longer activated by `_ipython_*` or `_repr_*` methods.
 
 ### v0.0.3
 * Various improvements.
