@@ -165,7 +165,11 @@ class LazyModule:
             register(p, ignore=[self.__get_suffix()], verbose=verbose)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.__name}, ignore={list(self.__ignored_attrs)})"
+        if self.__ignored_attrs:
+            ignore_repr = f", ignore={list(self.__ignored_attrs)}"
+        else:
+            ignore_repr = ""
+        return f"{self.__class__.__name__}({self.__name}{ignore_repr})"
 
     def __getattr__(self, __name: str) -> Any:
         if __name.startswith("!"):

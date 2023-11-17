@@ -16,11 +16,11 @@ Make *pandas* become a lazy module, for example:
 ```py
 >>> import lazyr
 >>> lazyr.register("pandas") # pandas is a lazy module from now on
-LazyModule(pandas, ignore=[])
+LazyModule(pandas)
 
 >>> import pandas as pd
 >>> pd
-LazyModule(pandas, ignore=[])
+LazyModule(pandas)
 
 >>> df = pd.DataFrame # pandas is activated and actually loaded now
 >>> df
@@ -32,7 +32,7 @@ There is also a simpler way to create a lazy module, but it may cause *type hint
 ```py
 >>> pd = lazyr.register("pandas")
 >>> pd
-LazyModule(pandas, ignore=[])
+LazyModule(pandas)
 ```
 
 ### Wake up a module
