@@ -9,12 +9,12 @@ A lazily-imported module (or a lazy module, to be short) is not physically loade
 pip install lazyr
 ```
 
-## Usage
+## How to use
+### Make a lazy module
 Make *pandas* become a lazy module, for example:
 
 ```py
 import lazyr
-
 lazyr.register("pandas") # pandas is a lazy module from now on
 
 import pandas as pd
