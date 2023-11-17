@@ -7,7 +7,7 @@ the Python environment until its attributes are being accessed. This could be us
 when you are importing some modules that are hardly used but take a lot of time to be 
 loaded.
 
-## How to use
+## Usage
 ### Make a lazy module
 
 Make `pandas` become a lazy module, for example:
@@ -25,7 +25,7 @@ Make `pandas` become a lazy module, for example:
 # Output: <class 'pandas.core.frame.DataFrame'>
 ```
 
-Also, there is a simpler way to create a lazy module, but it may cause *type hints* to 
+Also, there is a simpler way to create a lazy module, but it may cause `type hints` to 
 lose efficacy:
 
 ```py

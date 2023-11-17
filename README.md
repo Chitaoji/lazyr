@@ -9,7 +9,7 @@ A lazily-imported module (or a lazy module, to be short) is not physically loade
 pip install lazyr
 ```
 
-## How to use
+## Usage
 ### Make a lazy module
 Make *pandas* become a lazy module, for example:
 
