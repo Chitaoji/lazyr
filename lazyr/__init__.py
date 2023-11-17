@@ -147,6 +147,7 @@ class LazyModule:
     """
 
     __skipped: Set = {"__spec__", "__path__"}
+    __skipped_startswith = ("_ipython_", "_repr_")
 
     def __init__(
         self,
@@ -164,9 +165,7 @@ class LazyModule:
             register(p, ignore=[self.__get_suffix()], verbose=verbose)
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}({self.__name}, ignore={self.__ignored_attrs})"
-        )
+        return f"{self.__class__.__name__}({self.__name}, ignore={list(self.__ignored_attrs)})"
 
     def __getattr__(self, __name: str) -> Any:
         if __name.startswith("!"):
@@ -176,6 +175,8 @@ class LazyModule:
             if __name in self.__skipped:
                 if not sys._getframe(1).f_code.co_name == "_find_and_load_unlocked":
                     return None
+            elif __name.startswith(self.__skipped_startswith):
+                return None
             elif __name in self.__ignored_attrs:
                 if (module_name := f"{self.__name}.{__name}") in sys.modules:
                     return sys.modules[module_name]

@@ -6,7 +6,7 @@ A lazily-imported module (or a lazy module, to be short) is not physically loade
 ## Installation
 
 ```sh
-pip install lazyr
+$ pip install lazyr
 ```
 
 ## Usage
@@ -14,24 +14,25 @@ pip install lazyr
 Make *pandas* become a lazy module, for example:
 
 ```py
-import lazyr
-lazyr.register("pandas") # pandas is a lazy module from now on
+>>> import lazyr
+>>> lazyr.register("pandas") # pandas is a lazy module from now on
+LazyModule(pandas, ignore=[])
 
-import pandas as pd
-print(pd)
-# Output: LazyModule(pandas, ignore=set())
+>>> import pandas as pd
+>>> pd
+LazyModule(pandas, ignore=[])
 
-df = pd.DataFrame # pandas is activated and actually loaded now
-print(df)
-# Output: <class 'pandas.core.frame.DataFrame'>
+>>> df = pd.DataFrame # pandas is activated and actually loaded now
+>>> df
+<class 'pandas.core.frame.DataFrame'>
 ```
 
-There is a simpler way to create a lazy module, but it may cause *type hints* to lose efficacy:
+There is also a simpler way to create a lazy module, but it may cause *type hints* to lose efficacy:
 
 ```py
-pd = lazyr.register("pandas")
-print(pd)
-# Output: LazyModule(pandas, ignore=set())
+>>> pd = lazyr.register("pandas")
+>>> pd
+LazyModule(pandas, ignore=[])
 ```
 
 ### Wake up a module
@@ -39,7 +40,7 @@ print(pd)
 The lazy modules are not physically loaded until their attrubutes are imported or used, but sometimes you may want to activate a lazy module without excessing any of its attributes. For that purpose, you can wake up it like this:
 
 ```py
-lazyr.wakeup(pd) # pandas is no longer lazy now
+>>> lazyr.wakeup(pd) # pandas is no longer lazy now
 ```
 
 ## See Also
