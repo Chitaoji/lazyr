@@ -26,7 +26,7 @@ print(df)
 # Output: <class 'pandas.core.frame.DataFrame'>
 ```
 
-Also, there is a simpler way to create a lazy module, but it may cause *type hints* to lose efficacy:
+There is a simpler way to create a lazy module, but it may cause *type hints* to lose efficacy:
 
 ```py
 pd = lazyr.register("pandas")
