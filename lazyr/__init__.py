@@ -1,5 +1,58 @@
 """
-Creates lazy modules in a more readable and safer way.
+# lazyr
+Creates lazily-imported modules in a more readable and safer way.
+
+A lazily-imported module (or a lazy module, to be short) is not physically loaded in 
+the Python environment until its attributes are being accessed. This could be useful 
+when you are importing some modules that are hardly used but take a lot of time to be 
+loaded.
+
+## Usage
+### Make a lazy module
+
+Make `pandas` become a lazy module, for example:
+
+```py
+>>> import lazyr
+>>> lazyr.register("pandas") # pandas is a lazy module from now on
+
+>>> import pandas as pd
+>>> print(pd)
+# Output: LazyModule(pandas, ignore=set())
+
+>>> df = pd.DataFrame # pandas is activated and actually loaded now
+>>> print(df)
+# Output: <class 'pandas.core.frame.DataFrame'>
+```
+
+There is a simpler way to create a lazy module, but it may cause `type hints` to lose
+efficacy:
+
+```py
+>>> pd = lazyr.register("pandas")
+>>> print(pd)
+# Output: LazyModule(pandas, ignore=set())
+```
+
+### Wake up a module
+
+The lazy modules are not physically loaded until their attrubutes are imported or used,
+but sometimes you may want to activate a lazy module without excessing any of its 
+attributes. For that purpose, you can wake up it like this:
+
+```py
+>>> lazyr.wakeup(pd) # pandas is no longer lazy now
+```
+
+## See Also
+### Github repository
+* https://github.com/Chitaoji/lazyr/
+
+### PyPI project
+* https://pypi.org/project/lazyr/
+
+## License
+This project falls under the BSD 2-Clause License.
 
 """
 import importlib
@@ -7,6 +60,8 @@ import inspect
 import logging
 import sys
 from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set
+
+from .__version__ import __version__
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -62,8 +117,8 @@ def register(
 
 def __join_module_name(name: str, package: Optional[str] = None):
     if package is None:
-        package = ""
-    elif not name.startswith("."):
+        return name
+    if not name.startswith("."):
         raise TypeError(
             f"expected a relative import when the `package` argument is provided, \
 got '{name}' instead"
@@ -91,11 +146,7 @@ class LazyModule:
 
     """
 
-    __skipped: Set = {
-        "__spec__",
-        "__path__",
-        "_ipython_canary_method_should_not_exist_",
-    }
+    __skipped: Set = {"__spec__", "__path__"}
 
     def __init__(
         self,
@@ -122,13 +173,13 @@ class LazyModule:
             return getattr(self, f"_{self.__class__.__name__}__{__name[1:]}")
         self.__debug_access(__name)
         if self.__module is None:
-            if not sys._getframe(1).f_code.co_name == "_find_and_load_unlocked":
-                if __name in self.__skipped:
+            if __name in self.__skipped:
+                if not sys._getframe(1).f_code.co_name == "_find_and_load_unlocked":
                     return None
-                if __name in self.__ignored_attrs:
-                    if (module_name := f"{self.__name}.{__name}") in sys.modules:
-                        return sys.modules[module_name]
-                    return None
+            elif __name in self.__ignored_attrs:
+                if (module_name := f"{self.__name}.{__name}") in sys.modules:
+                    return sys.modules[module_name]
+                return None
             self.__wakeup(__name)
         return getattr(self.__module, __name)
 

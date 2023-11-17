@@ -1,7 +1,7 @@
 # lazyr
 Creates lazily-imported modules in a more readable and safer way.
 
-A lazily-imported module (or a lazy module, to be short) is  not physically loaded in the Python environment until its attributes are being accessed. This could be very useful when you are importing some modules that are hardly used but take a lot of time to be loaded.
+A lazily-imported module (or a lazy module, to be short) is not physically loaded in the Python environment until its attributes are being accessed. This could be useful when you are importing some modules that are hardly used but take a lot of time to be loaded.
 
 ## Installation
 
@@ -10,11 +10,11 @@ pip install lazyr
 ```
 
 ## Usage
-Let *pandas* be a lazy module, for example:
+### Make a lazy module
+Make *pandas* become a lazy module, for example:
 
 ```py
 import lazyr
-
 lazyr.register("pandas") # pandas is a lazy module from now on
 
 import pandas as pd
@@ -26,7 +26,7 @@ print(df)
 # Output: <class 'pandas.core.frame.DataFrame'>
 ```
 
-There is also a simpler way to create a lazy module, but may cause *type hints* to lose efficacy:
+There is a simpler way to create a lazy module, but it may cause *type hints* to lose efficacy:
 
 ```py
 pd = lazyr.register("pandas")
@@ -36,7 +36,7 @@ print(pd)
 
 ### Wake up a module
 
-The lazy modules are not actually loaded until their attrubutes are imported or used, but sometimes you may want to activate a lazy module without excessing any of its attributes. In this case, you can wake up it like this:
+The lazy modules are not physically loaded until their attrubutes are imported or used, but sometimes you may want to activate a lazy module without excessing any of its attributes. For that purpose, you can wake up it like this:
 
 ```py
 lazyr.wakeup(pd) # pandas is no longer lazy now
@@ -54,8 +54,11 @@ This project falls under the BSD 2-Clause License.
 
 ## History
 
+### v0.0.3
+* Various improvements.
+
 ### v0.0.2
-* Added the feature `lazyr.wakeup`.
+* New `lazyr.wakeup` function, for compulsively activating modules.
 
 ### v0.0.1
 * Initial release.
