@@ -146,11 +146,7 @@ class LazyModule:
 
     """
 
-    __skipped: Set = {
-        "__spec__",
-        "__path__",
-        "_ipython_canary_method_should_not_exist_",
-    }
+    __skipped: Set = {"__spec__", "__path__"}
 
     def __init__(
         self,
