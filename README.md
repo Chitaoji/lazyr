@@ -40,7 +40,7 @@ LazyModule(pandas)
 The lazy modules are not physically loaded until their attrubutes are imported or used, but sometimes you may want to activate a lazy module without excessing any of its attributes. For that purpose, you can wake up it like this:
 
 ```py
->>> lazyr.wakeup(pd) # pandas is no longer lazy now
+>>> lazyr.wakeup(pd) # pandas is activated
 ```
 
 ## See Also
@@ -54,6 +54,9 @@ The lazy modules are not physically loaded until their attrubutes are imported o
 This project falls under the BSD 2-Clause License.
 
 ## History
+
+### v0.0.4
+* Lazy modules no longer activated by *\_ipython_\** or *\_repr_\** methods.
 
 ### v0.0.3
 * Various improvements.
