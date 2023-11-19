@@ -105,7 +105,7 @@ def register(
         Specifies the ignored attrbutes of the lazy module. When an ignored attribute
         is accessed, the lazy module will still remain unloaded. By default None.
     verbose : Literal[0, 1, 2, 3], optional
-        Specifies the level of verbosity for debugging. It accepts values from 0 to 3.
+        Specifies the level of verbosity for logging. It accepts values from 0 to 3.
         By default 0.
 
     Returns
