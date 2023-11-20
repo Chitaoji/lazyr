@@ -57,14 +57,14 @@ LazyModule(pandas, ignore=['DataFrame', 'Series'])
 >>> from pandas import Series # pandas is not loaded; Series is set to None
 >>> from pandas import io # pandas is loaded because 'io' is not an ignored attribute
 
->>> from pandas import DataFrame # DataFrame is normally loaded this time 
+>>> from pandas import DataFrame # DataFrame is loaded this time 
 >>> DataFrame
 <class 'pandas.core.frame.DataFrame'>
 ```
 
 ### Logging
 
-Specify the parameter `verbose` to see what exactly will happen to it during the runtime:
+Specify the parameter `verbose` on calling `register` to see what exactly will happen to it during the runtime:
 
 ```py
 >>> import lazyr
