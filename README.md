@@ -46,7 +46,7 @@ The lazy modules are not physically loaded until their attrubutes are imported o
 
 ### Ignore attributes
 
-You can make a module even lazier by setting the parameter `ignore` when calling `register`, which specifies the ignored attributes of the module. A lazy module will not be activated on access to an ignored attribute of it, and the attribute itsef will be set to None.
+You can make a module even lazier by setting the parameter `ignore` on calling `register`, which specifies the ignored attributes of the module. The values of the ignored attributes will be set to None, and a lazy module will no longer be activated when its ignored attributes are accessed.
 
 ```py
 >>> import lazyr
@@ -76,7 +76,7 @@ DEBUG:lazyr:access:pandas.__spec__
 
 >>> df = pd.DataFrame
 DEBUG:lazyr:access:pandas.DataFrame
-INFO:lazyr:load:pandas on access to its attribute 'DataFrame'
+INFO:lazyr:load:pandas on accessing its attribute 'DataFrame'
 ```
 
 ## See Also
@@ -91,7 +91,7 @@ This project falls under the BSD 2-Clause License.
 
 ## History
 
-### v0.0.5
+### v0.0.6
 * Improved logging:
     * Created a separate logger named 'lazyr' for lazy modules;
     * More detailed logs when `verbose` > 0.
