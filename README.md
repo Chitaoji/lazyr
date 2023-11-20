@@ -50,10 +50,29 @@ You can make a lazy module even lazier by ignoring certain attributes when reges
 
 ```py
 >>> import lazyr
->>> pd = lazyr.register("pandas", ignore=["DataFrame", "Series"])
+>>> lazyr.register("pandas", ignore=["DataFrame", "Series"])
+LazyModule(pandas, ignore=['DataFrame', 'Series'])
+
 >>> from pandas import DataFrame # pandas is still lazy
 >>> from pandas import Series # pandas is still lazy
 >>> from pandas import io # pandas is loaded because 'io' is not an ignored attribute
+```
+
+### Logging
+
+When registering a lazy module, specify its parameter `verbose` to see what exactly will be happening to it during the runtime.
+
+```py
+>>> import lazyr
+>>> _ = lazyr.register("pandas", verbose=2)
+INFO:lazyr:import:pandas
+
+>>> import pandas as pd
+DEBUG:lazyr:access:pandas.__spec__
+
+>>> df = pd.DataFrame
+DEBUG:lazyr:access:pandas.DataFrame
+INFO:lazyr:load:pandas on accessing attribute `DataFrame`
 ```
 
 ## See Also
