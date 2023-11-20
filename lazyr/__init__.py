@@ -102,9 +102,9 @@ def register(
         as the anchor point from which to resolve the relative import to an absolute
         import, by default None.
     ignore : Optional[List[str]], optional
-        Specifies the ignored attributes of the lazy module. When an ignored attribute
-        is accessed, the lazy module will still remain unloaded, and the attribute
-        itsef will be set to None. By default None.
+        Specifies the ignored attributes of the lazy module. A lazy module will not
+        be activated on accessing to an ignored attribute, and the attribute itsef
+        will be set to None.
     verbose : Literal[0, 1, 2, 3], optional
         Specifies the level of verbosity for logging. It accepts values from 0 to 3,
         where:
@@ -252,7 +252,7 @@ class LazyModule:
     def __logging_load(self, __name: str) -> None:
         if self.__verbose >= 1:
             self.__logger.info(
-                "load:%s on accessing its attribute '%s'%s",
+                "load:%s on accessing to its attribute '%s'%s",
                 self.__name,
                 __name,
                 self.__get_frame_info(4),
