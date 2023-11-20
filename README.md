@@ -68,6 +68,9 @@ This project falls under the BSD 2-Clause License.
 
 ## History
 
+### v0.0.5
+* Improves logging.
+
 ### v0.0.4
 * `LazyModule` no longer activated by `_ipython_*` or `_repr_*` methods.
 
@@ -75,7 +78,7 @@ This project falls under the BSD 2-Clause License.
 * Various improvements.
 
 ### v0.0.2
-* New `lazyr.wakeup` function, for compulsively activating modules.
+* New `wakeup` function, for compulsively activating modules.
 
 ### v0.0.1
 * Initial release.
