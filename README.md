@@ -46,14 +46,37 @@ The lazy modules are not physically loaded until their attrubutes are imported o
 
 ### Ignore attributes
 
-You can make a lazy module even lazier by ignoring certain attributes when regestering it. The parameter `ignore` of function `register` specifies the ignored attrbutes. When an ignored attribute is accessed, the lazy module will still remain unloaded.
+You can make a module even lazier by setting the parameter `ignore` when calling `register`, which specifies the ignored attributes of the module. A lazy module will not be activated on access to an ignored attribute of it, and the attribute itsef will be set to None.
 
 ```py
 >>> import lazyr
->>> pd = lazyr.register("pandas", ignore=["DataFrame", "Series"])
->>> from pandas import DataFrame # pandas is still lazy
->>> from pandas import Series # pandas is still lazy
+>>> lazyr.register("pandas", ignore=["DataFrame", "Series"])
+LazyModule(pandas, ignore=['DataFrame', 'Series'])
+
+>>> from pandas import DataFrame # pandas is not loaded; DataFrame is set to None
+>>> from pandas import Series # pandas is not loaded; Series is set to None
 >>> from pandas import io # pandas is loaded because 'io' is not an ignored attribute
+
+>>> from pandas import DataFrame # DataFrame is normally loaded this time 
+>>> DataFrame
+<class 'pandas.core.frame.DataFrame'>
+```
+
+### Logging
+
+Specify the parameter `verbose` to see what exactly will happen to it during the runtime:
+
+```py
+>>> import lazyr
+>>> _ = lazyr.register("pandas", verbose=2)
+INFO:lazyr:import:pandas
+
+>>> import pandas as pd
+DEBUG:lazyr:access:pandas.__spec__
+
+>>> df = pd.DataFrame
+DEBUG:lazyr:access:pandas.DataFrame
+INFO:lazyr:load:pandas on access to its attribute 'DataFrame'
 ```
 
 ## See Also
