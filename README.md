@@ -60,7 +60,7 @@ LazyModule(pandas, ignore=['DataFrame', 'Series'])
 
 ### Logging
 
-Specify the parameter `verbose` to see what exactly will happen to it during the runtime.
+Specify the parameter `verbose` to see what exactly will happen to it during the runtime:
 
 ```py
 >>> import lazyr
