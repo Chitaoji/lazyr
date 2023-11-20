@@ -105,7 +105,12 @@ def register(
         Specifies the ignored attrbutes of the lazy module. When an ignored attribute
         is accessed, the lazy module will still remain unloaded. By default None.
     verbose : Literal[0, 1, 2, 3], optional
-        Specifies the level of verbosity for logging. It accepts values from 0 to 3.
+        Specifies the level of verbosity for logging. It accepts values from 0 to 3,
+        where:
+            0 : disables logging;
+            1 : logs the importing and loading of lazy modules with level INFO;
+            2 : also logs the accessing of lazy modules' attributes with level DEBUG;
+            3 : adds stack infomation, NOTE: this will SLOW down the program.
         By default 0.
 
     Returns
@@ -173,6 +178,7 @@ class LazyModule:
         self.__ignore(ignore)
         self.__verbose = verbose
         self.__module: Optional[ModuleType] = None
+        self.__logger = self.__logging_import()
 
         if p := self.__get_parent():
             register(p, ignore=[self.__get_suffix()], verbose=verbose)
@@ -187,7 +193,7 @@ class LazyModule:
     def __getattr__(self, __name: str) -> Any:
         if __name.startswith("!"):
             return getattr(self, f"_{self.__class__.__name__}__{__name[1:]}")
-        self.__debug_access(__name)
+        self.__logging_access(__name)
         if self.__module is None:
             if __name in self.__skipped:
                 if not sys._getframe(1).f_code.co_name == "_find_and_load_unlocked":
@@ -203,7 +209,7 @@ class LazyModule:
 
     def __wakeup(self, __name: Optional[str] = None) -> None:
         if self.__import_module():
-            self.__debug_import("__wakeup" if __name is None else __name)
+            self.__logging_load("__wakeup" if __name is None else __name)
 
     def __ignore(self, ignore: Optional[List[str]] = None) -> None:
         if ignore is not None:
@@ -222,16 +228,30 @@ class LazyModule:
         self.__module = module
         return res
 
-    def __debug_access(self, __name: str) -> None:
+    def __logging_import(self) -> Optional["logging.Logger"]:
+        if self.__verbose >= 1:
+            logger = logging.getLogger("lazyr")
+            logger.propagate = False
+            if not logger.hasHandlers():
+                logger.setLevel(logging.DEBUG)
+                sh = logging.StreamHandler()
+                fm = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
+                sh.setFormatter(fm)
+                logger.addHandler(sh)
+            logger.info("import:%s", self.__name)
+            return logger
+        return None
+
+    def __logging_access(self, __name: str) -> None:
         if self.__verbose >= 2:
-            logging.warning(
-                "accessing `%s.%s`%s", self.__name, __name, self.__get_frame_info(3)
+            self.__logger.debug(
+                "access:%s.%s%s", self.__name, __name, self.__get_frame_info(3)
             )
 
-    def __debug_import(self, __name: str) -> None:
+    def __logging_load(self, __name: str) -> None:
         if self.__verbose >= 1:
-            logging.warning(
-                "`%s` is loaded with attribute `%s`%s",
+            self.__logger.info(
+                "load:%s on accessing attribute `%s`%s",
                 self.__name,
                 __name,
                 self.__get_frame_info(4),
@@ -241,7 +261,7 @@ class LazyModule:
         if self.__verbose < 3:
             return ""
         f = inspect.stack()[depth]
-        return f" by '{f[1]}': {f[3]}: {f[4][0].strip() if isinstance(f[4], list) else None!r}"
+        return f" by {f[1]} - {f[3]} - {f[4][0].strip() if isinstance(f[4], list) else None}"
 
     def __get_family(self) -> List[str]:
         names: List[str] = []
