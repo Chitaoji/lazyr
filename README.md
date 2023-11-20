@@ -46,16 +46,20 @@ The lazy modules are not physically loaded until their attrubutes are imported o
 
 ### Ignore attributes
 
-You can make a lazy module even lazier by ignoring certain attributes of it. The parameter `ignore` of function `register` specifies the ignored attrbutes. When an ignored attribute is accessed, the lazy module will still remain unloaded.
+You can make a lazy module even lazier by ignoring certain attributes of it. The parameter `ignore` of function `register` specifies the ignored attributes. When an ignored attribute is accessed, the module will still remain unloaded, and the attribute itself will be set to None.
 
 ```py
 >>> import lazyr
 >>> lazyr.register("pandas", ignore=["DataFrame", "Series"])
 LazyModule(pandas, ignore=['DataFrame', 'Series'])
 
->>> from pandas import DataFrame # pandas is still lazy
->>> from pandas import Series # pandas is still lazy
+>>> from pandas import DataFrame # pandas is not loaded; DataFrame is set to None
+>>> from pandas import Series # pandas is not loaded; Series is set to None
 >>> from pandas import io # pandas is loaded because 'io' is not an ignored attribute
+
+>>> from pandas import DataFrame # DataFrame is normally loaded this time 
+>>> DataFrame
+<class 'pandas.core.frame.DataFrame'>
 ```
 
 ### Logging
