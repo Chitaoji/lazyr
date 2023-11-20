@@ -46,7 +46,7 @@ The lazy modules are not physically loaded until their attrubutes are imported o
 
 ### Ignore attributes
 
-You can make a module even lazier by setting the parameter `ignore` on calling `register`, which specifies the ignored attributes of the module. The values of the ignored attributes will be set to None, and a lazy module will no longer be activated when its ignored attributes are accessed.
+You can make a module even lazier by setting the parameter `ignore` on calling `register`, which specifies the ignored attributes of the module. The values of the ignored attributes will be set to None, and a lazy module will no longer be activated when its ignored attributes are being accessed.
 
 ```py
 >>> import lazyr
