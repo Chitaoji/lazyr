@@ -46,7 +46,7 @@ The lazy modules are not physically loaded until their attrubutes are imported o
 
 ### Ignore attributes
 
-You can make a lazy module even lazier by ignoring certain attributes when regestering it. The parameter `ignore` of function `register` specifies the ignored attrbutes. When an ignored attribute is accessed, the lazy module will still remain unloaded.
+You can make a lazy module even lazier by ignoring certain attributes of it. The parameter `ignore` of function `register` specifies the ignored attrbutes. When an ignored attribute is accessed, the lazy module will still remain unloaded.
 
 ```py
 >>> import lazyr
@@ -60,7 +60,7 @@ LazyModule(pandas, ignore=['DataFrame', 'Series'])
 
 ### Logging
 
-When registering a lazy module, specify its parameter `verbose` to see what exactly will be happening to it during the runtime.
+Specify the parameter `verbose` to see what exactly will happen to it during the runtime.
 
 ```py
 >>> import lazyr
