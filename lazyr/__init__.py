@@ -103,8 +103,8 @@ def register(
         import, by default None.
     ignore : Optional[List[str]], optional
         Specifies the ignored attributes of the lazy module. A lazy module will not
-        be activated on access to an ignored attribute, and the attribute itsef will
-        be set to None.
+        be activated on access to an ignored attribute of it, and the attribute itsef
+        will be set to None.
     verbose : Literal[0, 1, 2, 3], optional
         Specifies the level of verbosity for logging. It accepts values from 0 to 3,
         where:
