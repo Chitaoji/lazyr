@@ -80,7 +80,7 @@ This project falls under the BSD 2-Clause License.
 * Various improvements.
 
 ### v0.0.2
-* New `wakeup` function, for compulsively activating modules.
+* New function `wakeup`, for compulsively activating modules.
 
 ### v0.0.1
 * Initial release.
