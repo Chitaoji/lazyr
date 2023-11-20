@@ -251,7 +251,7 @@ class LazyModule:
     def __logging_load(self, __name: str) -> None:
         if self.__verbose >= 1:
             self.__logger.info(
-                "load:%s on accessing attribute '%s'%s",
+                "load:%s on accessing its attribute '%s'%s",
                 self.__name,
                 __name,
                 self.__get_frame_info(4),
