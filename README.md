@@ -46,11 +46,11 @@ The lazy modules are not physically loaded until their attrubutes are imported o
 
 ### Ignore attributes
 
-You can make a module even lazier by setting the parameter `ignore`, which ignores the access to certain attributes of the module. The values of the ignored attributes will be set to None, and a lazy module will no longer be activated when its ignored attributes are being accessed.
+You can make a module even lazier by setting the `ignore` parameter of `register()`, which tells the module to ignore the access to the specified attributes. The values of the ignored attributes will be set to None, and a lazy module will no longer be activated when its ignored attributes are being accessed.
 
 ```py
 >>> import lazyr
->>> lazyr.register("pandas", ignore=["DataFrame", "Series"])
+>>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # Ignoring DataFrame and Series
 LazyModule(pandas, ignore=['DataFrame', 'Series'])
 
 >>> from pandas import DataFrame # pandas is not loaded; DataFrame is set to None
@@ -64,7 +64,7 @@ LazyModule(pandas, ignore=['DataFrame', 'Series'])
 
 ### Logging
 
-Specify `verbose` when calling `register` to see what exactly will happen to a lazy module during the runtime:
+Specify the `verbose` parameter when calling `register()` to see what exactly will happen to a lazy module during the runtime:
 
 ```py
 >>> import lazyr
@@ -100,13 +100,13 @@ This project falls under the BSD 2-Clause License.
     * More detailed logs when `verbose` > 0.
 
 ### v0.0.4
-* `LazyModule` no longer activated by `_ipython_*` or `_repr_*` methods.
+* `LazyModule` no longer activated by `_ipython_*()` or `_repr_*()` methods.
 
 ### v0.0.3
 * Various improvements.
 
 ### v0.0.2
-* New function `wakeup`, for compulsively activating modules.
+* New function `wakeup()`, for compulsively activating modules.
 
 ### v0.0.1
 * Initial release.

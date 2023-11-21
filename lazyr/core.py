@@ -1,8 +1,8 @@
 """
 Contains the core of lazyr: register, wakeup, etc.
 
-Please note that this module is private. All functions and objects are available in 
-the main `lazyr` namespace - use that instead.
+NOTE: this module is private. All functions and objects are available in the main
+`lazyr` namespace - use that instead.
 
 """
 import importlib
@@ -96,7 +96,10 @@ def wakeup(module: "ModuleType"):
 
 class LazyModule:
     """
-    A lazy module.
+    An implementation of a lazy module.
+
+    Note that this should NEVER be instantiated directly, but always through the module-level
+    function `lazyr.register()`.
 
     """
 
