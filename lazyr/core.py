@@ -1,8 +1,8 @@
 """
 Contains the core of lazyr: register, wakeup, etc.
 
-Please note that this module is private. All functions and objects
-are available in the main `lazyr` namespace - use that instead.
+Please note that this module is private. All functions and objects are available in 
+the main `lazyr` namespace - use that instead.
 
 """
 import importlib
