@@ -37,9 +37,9 @@ def register(
         as the anchor point from which to resolve the relative import to an absolute
         import, by default None.
     ignore : Optional[List[str]], optional
-        Specifies the ignored attributes of the lazy module. The values of the ignored
-        attributes will be set to None, and a lazy module will no longer be activated
-        when its ignored attributes are being accessed.
+        Specifies the names of attributes to whose access will be ignored. The values
+        of the ignored attributes will be set to None, and a lazy module will no longer
+        be activated by the access to them.
     verbose : Literal[0, 1, 2, 3], optional
         Specifies the level of verbosity for logging. It accepts values from 0 to 3,
         where:
