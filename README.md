@@ -91,6 +91,9 @@ This project falls under the BSD 2-Clause License.
 
 ## History
 
+### v0.0.7
+* Removed unnecessary objects from the main `lazyr` namespace.
+
 ### v0.0.6
 * Improved logging:
     * Created a separate logger named 'lazyr' for lazy modules;
