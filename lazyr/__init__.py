@@ -2,7 +2,7 @@
 # lazyr
 Creates lazily-imported modules in a more readable and safer way.
 
-A lazily-imported module (or a lazy module, to be short) is not physically loaded in the Python 
+A lazily-imported module (or a lazy module, to be short) is not physically loaded in the Python
 environment until its attributes are being accessed. This could be useful when you are importing
 some modules that are hardly used but take a lot of time to be loaded.
 
@@ -36,8 +36,9 @@ LazyModule(pandas)
 ### Wake up a module
 
 The lazy modules are not physically loaded until their attrubutes are imported or used, but 
-sometimes you may want to activate a lazy module without excessing any of its attributes. On that
-purpose, you can 'wake' up the module like this:
+sometimes you may want to activate a lazy module without accessing any of its attributes. On that
+purpose, you can 
+'wake' up the module like this:
 
 ```py
 >>> lazyr.wakeup(pd) # pandas is woken up and loaded
@@ -45,16 +46,41 @@ purpose, you can 'wake' up the module like this:
 
 ### Ignore attributes
 
-You can make a lazy module even lazier by ignoring certain attributes when regestering it. The 
-`ignore` parameter of `lazyr.register` specifies the ignored attrbutes. When an ignored attribute 
-is accessed, the lazy module will still remain unloaded.
+You can make a module even lazier by setting the `ignore` parameter of `register()`, which tells the 
+module to ignore the access to the specified attributes. The values of the ignored attributes will 
+be set to None, and a lazy module will no longer be activated when its ignored attributes are being
+accessed.
 
 ```py
 >>> import lazyr
->>> pd = lazyr.register("pandas", ignore=["DataFrame", "Series"])
->>> from pandas import DataFrame # pandas is still lazy
->>> from pandas import Series # pandas is still lazy
+>>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # Ignoring DataFrame and Series
+LazyModule(pandas, ignore=['DataFrame', 'Series'])
+
+>>> from pandas import DataFrame # pandas is not loaded; DataFrame is set to None
+>>> from pandas import Series # pandas is not loaded; Series is set to None
 >>> from pandas import io # pandas is loaded because 'io' is not an ignored attribute
+
+>>> from pandas import DataFrame # DataFrame is loaded this time 
+>>> DataFrame
+<class 'pandas.core.frame.DataFrame'>
+```
+
+### Logging
+
+Specify the `verbose` parameter when calling `register()` to see what exactly will happen to a lazy
+module during the runtime:
+
+```py
+>>> import lazyr
+>>> _ = lazyr.register("pandas", verbose=2)
+INFO:lazyr:import:pandas
+
+>>> import pandas as pd
+DEBUG:lazyr:access:pandas.__spec__
+
+>>> df = pd.DataFrame
+DEBUG:lazyr:access:pandas.DataFrame
+INFO:lazyr:load:pandas on accessing its attribute 'DataFrame'
 ```
 
 ## See Also
@@ -65,7 +91,7 @@ is accessed, the lazy module will still remain unloaded.
 * https://pypi.org/project/lazyr/
 
 ## License
-This project falls under the BSD 2-Clause License.
+This project falls under the BSD 3-Clause License.
 
 """
 
