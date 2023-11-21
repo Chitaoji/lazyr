@@ -87,7 +87,7 @@ INFO:lazyr:load:pandas on accessing its attribute 'DataFrame'
 * https://pypi.org/project/lazyr/
 
 ## License
-This project falls under the BSD-3-Clause license.
+This project falls under the BSD 3-Clause License.
 
 ## History
 
