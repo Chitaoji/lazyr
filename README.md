@@ -38,7 +38,7 @@ LazyModule(pandas)
 
 ### Wake up a module
 
-The lazy modules are not physically loaded until their attrubutes are imported or used, but sometimes you may want to activate a lazy module without excessing any of its attributes. On that purpose, you can 'wake' up the module like this:
+The lazy modules are not physically loaded until their attrubutes are imported or used, but sometimes you may want to activate a lazy module without accessing any of its attributes. On that purpose, you can 'wake' up the module like this:
 
 ```py
 >>> lazyr.wakeup(pd) # pandas is woken up and loaded
@@ -46,7 +46,7 @@ The lazy modules are not physically loaded until their attrubutes are imported o
 
 ### Ignore attributes
 
-You can make a module even lazier by setting the parameter `ignore` on calling `register`, which specifies the ignored attributes of the module. The values of the ignored attributes will be set to None, and a lazy module will no longer be activated when its ignored attributes are being accessed.
+You can make a module even lazier by setting the parameter `ignore`, which ignores the access to certain attributes of the module. The values of the ignored attributes will be set to None, and a lazy module will no longer be activated when its ignored attributes are being accessed.
 
 ```py
 >>> import lazyr
@@ -64,7 +64,7 @@ LazyModule(pandas, ignore=['DataFrame', 'Series'])
 
 ### Logging
 
-Specify the parameter `verbose` on calling `register` to see what exactly will happen to a lazy module during the runtime:
+Specify `verbose` when calling `register` to see what exactly will happen to a lazy module during the runtime:
 
 ```py
 >>> import lazyr
@@ -90,6 +90,9 @@ INFO:lazyr:load:pandas on accessing its attribute 'DataFrame'
 This project falls under the BSD 2-Clause License.
 
 ## History
+
+### v0.0.7
+* Removed unnecessary objects from the main `lazyr` namespace.
 
 ### v0.0.6
 * Improved logging:
