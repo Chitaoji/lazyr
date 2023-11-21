@@ -96,7 +96,10 @@ def wakeup(module: "ModuleType"):
 
 class LazyModule:
     """
-    A lazy module.
+    An implementation of a lazy module.
+
+    Note that this should NEVER be instantiated directly, but always through the module-level
+    function `lazyr.register()`.
 
     """
 
