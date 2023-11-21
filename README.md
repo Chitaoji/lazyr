@@ -46,7 +46,7 @@ The lazy modules are not physically loaded until their attrubutes are imported o
 
 ### Ignore attributes
 
-You can make a module even lazier by setting the parameter `ignore` on calling `register`, which specifies the ignored attributes of the module. The values of the ignored attributes will be set to None, and a lazy module will no longer be activated when its ignored attributes are being accessed.
+You can make a module even lazier by setting the parameter `ignore` on calling function `register`, which specifies the ignored attributes of the module. The values of the ignored attributes will be set to None, and a lazy module will no longer be activated when its ignored attributes are being accessed.
 
 ```py
 >>> import lazyr
@@ -94,7 +94,7 @@ This project falls under the BSD 2-Clause License.
 ### v0.0.6
 * Improved logging:
     * Created a separate logger named 'lazyr' for lazy modules;
-    * More detailed logs when `verbose` > 0.
+    * More detailed logs when specifying `verbose` > 0.
 
 ### v0.0.4
 * `LazyModule` no longer activated by `_ipython_*` or `_repr_*` methods.
