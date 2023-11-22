@@ -58,13 +58,13 @@ class UploadCommand(Command):
         print(f"\033[1m{s}\033[0m")
 
     def initialize_options(self):
-        """Initialize options."""
+        """Initializes options."""
 
     def finalize_options(self):
-        """Finalize options."""
+        """Finalizes options."""
 
     def run(self):
-        """Run commands."""
+        """Runs commands."""
         try:
             self.status("Removing previous builds…")
             rmtree(os.path.join(here, "dist"))

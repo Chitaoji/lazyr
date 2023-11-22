@@ -1,5 +1,5 @@
 """
-Contains the core of lazyr: register, wakeup, etc.
+Contains the core of lazyr: register(), wakeup(), etc.
 
 NOTE: this module is private. All functions and objects are available in the main
 `lazyr` namespace - use that instead.
@@ -37,9 +37,9 @@ def register(
         as the anchor point from which to resolve the relative import to an absolute
         import, by default None.
     ignore : Optional[List[str]], optional
-        Specifies the ignored attributes of the lazy module. The values of the ignored
-        attributes will be set to None, and a lazy module will no longer be activated
-        when its ignored attributes are being accessed.
+        Specifies the names of attributes to whose access will be ignored. The values
+        of the ignored attributes will be set to None, and a lazy module will no longer
+        be activated by the access to them.
     verbose : Literal[0, 1, 2, 3], optional
         Specifies the level of verbosity for logging. It accepts values from 0 to 3,
         where:
@@ -203,8 +203,10 @@ class LazyModule:
         return f" by {f[1]} - {f[3]} - {f[4][0].strip() if isinstance(f[4], list) else None}"
 
     def __get_family(self) -> List[str]:
-        names: List[str] = []
-        return [".".join(names := names + [i]) for i in self.__name.split(".")]
+        names: List[str] = [tmp := (splits := self.__name.split("."))[0]]
+        for i in splits[1:]:
+            names.append(tmp := f"{tmp}.{i}")
+        return names
 
     def __get_parent(self) -> str:
         return self.__name.rpartition(".")[0]
