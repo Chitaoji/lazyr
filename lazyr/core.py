@@ -203,8 +203,10 @@ class LazyModule:
         return f" by {f[1]} - {f[3]} - {f[4][0].strip() if isinstance(f[4], list) else None}"
 
     def __get_family(self) -> List[str]:
-        names: List[str] = []
-        return [".".join(names := names + [i]) for i in self.__name.split(".")]
+        names: List[str] = [tmp := (splits := self.__name.split("."))[0]]
+        for i in splits[1:]:
+            names.append(tmp := f"{tmp}.{i}")
+        return names
 
     def __get_parent(self) -> str:
         return self.__name.rpartition(".")[0]
