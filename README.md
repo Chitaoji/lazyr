@@ -91,7 +91,7 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 
-### v0.0.8
+### v0.0.9
 * Updated LICENSE.
 
 ### v0.0.7
