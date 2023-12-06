@@ -1,0 +1,10 @@
+# Package meta-data.
+NAME: lazyr
+DESCRIPTION: Makes lazy modules in a more readable and friendly way.
+URL: https://github.com/Chitaoji/lazyr/
+EMAIL: 2360742040@qq.com
+AUTHOR: Chitaoji
+REQUIRES_PYTHON: ">=3.8.13"
+VERSION:
+REQUIRED: []
+EXTRAS: {}
