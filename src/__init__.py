@@ -78,7 +78,7 @@ DEBUG:lazyr:access:pandas.__spec__
 
 >>> df = pd.DataFrame
 DEBUG:lazyr:access:pandas.DataFrame
-INFO:lazyr:load:pandas on accessing its attribute 'DataFrame'
+INFO:lazyr:load:pandas(.DataFrame)
 ```
 
 ## See Also
