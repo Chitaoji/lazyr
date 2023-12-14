@@ -190,7 +190,7 @@ class LazyModule:
     def __logging_load(self, __name: str) -> None:
         if self.__verbose >= 1:
             self.__logger.info(
-                "load:%s on accessing its attribute '%s'%s",
+                "load:%s(.%s)%s",
                 self.__name,
                 __name,
                 self.__get_frame_info(4),
@@ -200,7 +200,7 @@ class LazyModule:
         if self.__verbose < 3:
             return ""
         f = inspect.stack()[depth]
-        return f" by {f[1]} - {f[3]} - {f[4][0].strip() if isinstance(f[4], list) else None}"
+        return f" ----> {f[1]} --> {f[3]} --> {f[4][0].strip() if isinstance(f[4], list) else None}"
 
     def __get_family(self) -> List[str]:
         names: List[str] = [tmp := (splits := self.__name.split("."))[0]]

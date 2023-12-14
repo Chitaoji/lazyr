@@ -35,10 +35,9 @@ LazyModule(pandas)
 
 ### Wake up a module
 
-The lazy modules are not physically loaded until their attrubutes are imported or used, but 
+The lazy modules are not physically loaded until their attrubutes are imported or used, but
 sometimes you may want to activate a lazy module without accessing any of its attributes. On that
-purpose, you can 
-'wake' up the module like this:
+purpose, you can 'wake' up the module like this:
 
 ```py
 >>> lazyr.wakeup(pd) # pandas is woken up and loaded
@@ -47,7 +46,7 @@ purpose, you can
 ### Ignore attributes
 
 You can make a module even lazier by setting the `ignore` parameter of `register()`, which specifies
-the names of attributes to whose access will be ignored. The values of the ignored attributes will 
+the names of attributes to whose access will be ignored. The values of the ignored attributes will
 be set to None, and a lazy module will no longer be activated by the access to them.
 
 ```py
@@ -59,7 +58,7 @@ LazyModule(pandas, ignore=['DataFrame', 'Series'])
 >>> from pandas import Series # pandas is not loaded; Series is set to None
 >>> from pandas import io # pandas is loaded because 'io' is not an ignored attribute
 
->>> from pandas import DataFrame # DataFrame is loaded this time 
+>>> from pandas import DataFrame # DataFrame is loaded this time
 >>> DataFrame
 <class 'pandas.core.frame.DataFrame'>
 ```

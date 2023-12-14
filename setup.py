@@ -4,6 +4,7 @@ Setup the package.
 To use the full functionality of this file, you must:
 
 ```sh
+$ pip install pyyaml
 $ pip install twine
 $ pip install wheel
 ```
@@ -25,21 +26,21 @@ here = Path(__file__).parent
 # Load the package's meta-data from metadata.yml.
 yml: Dict[str, Any] = yaml.safe_load((here / "metadata.yml").read_text())
 NAME: Final[str] = yml["NAME"]
-DESCRIPTION: Final[str] = yml["DESCRIPTION"]
-URL: Final[str] = yml["URL"]
-EMAIL: Final[str] = yml["EMAIL"]
-AUTHOR: Final[str] = yml["AUTHOR"]
-REQUIRES_PYTHON: Final[str] = yml["REQUIRES_PYTHON"]
 VERSION: Final[Optional[str]] = yml["VERSION"]
-REQUIRED: Final[List[str]] = yml["REQUIRED"]
+SUMMARY: Final[str] = yml["SUMMARY"]
+HOMEPAGE: Final[str] = yml["HOMEPAGE"]
+AUTHOR: Final[str] = yml["AUTHOR"]
+AUTHOR_EMAIL: Final[str] = yml["AUTHOR_EMAIL"]
+REQUIRES_PYTHON: Final[str] = yml["REQUIRES_PYTHON"]
+REQUIRES: Final[List[str]] = yml["REQUIRES"]
 EXTRAS: Final[Dict] = yml["EXTRAS"]
-
+PACKAGE_DIR = "src"
 
 # Import the README and use it as the long-description.
 try:
     long_description = "\n" + (here / "README.md").read_text()
 except FileNotFoundError:
-    long_description = DESCRIPTION
+    long_description = SUMMARY
 
 
 # Load the package's __version__.py module as a dictionary.
@@ -47,8 +48,7 @@ about = {}
 python_exec = exec
 if not VERSION:
     try:
-        project_slug = NAME.lower().replace("-", "_").replace(" ", "_")
-        python_exec((here / project_slug / "__version__.py").read_text(), about)
+        python_exec((here / PACKAGE_DIR / "__version__.py").read_text(), about)
     except FileNotFoundError:
         about["__version__"] = "0.0.0"
 else:
@@ -212,7 +212,7 @@ class ReadmeFormatError(Exception):
 if __name__ == "__main__":
     # Import the __init__.py and change the module docstring.
     try:
-        init_path = here / project_slug / "__init__.py"
+        init_path = here / PACKAGE_DIR / "__init__.py"
         module_file = init_path.read_text()
         new_doc = readme2doc(long_description)  # pylint: disable=invalid-name
         if "'''" in new_doc and '"""' in new_doc:
@@ -228,19 +228,22 @@ if __name__ == "__main__":
     except FileNotFoundError:
         pass
 
-    # Where the magic happens
+    # Where the magic happens.
     setup(
         name=NAME,
         version=about["__version__"],
-        description=DESCRIPTION,
+        description=SUMMARY,
         long_description=long_description,
         long_description_content_type="text/markdown",
         author=AUTHOR,
-        author_email=EMAIL,
+        author_email=AUTHOR_EMAIL,
         python_requires=REQUIRES_PYTHON,
-        url=URL,
-        packages=find_packages(exclude=["examples"]),
-        install_requires=REQUIRED,
+        url=HOMEPAGE,
+        packages=[
+            x.replace(PACKAGE_DIR, NAME) for x in find_packages(exclude=["examples"])
+        ],
+        package_dir={NAME: PACKAGE_DIR},
+        install_requires=REQUIRES,
         extras_require=EXTRAS,
         include_package_data=True,
         license="BSD",

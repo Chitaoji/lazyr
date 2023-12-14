@@ -76,7 +76,7 @@ DEBUG:lazyr:access:pandas.__spec__
 
 >>> df = pd.DataFrame
 DEBUG:lazyr:access:pandas.DataFrame
-INFO:lazyr:load:pandas on accessing its attribute 'DataFrame'
+INFO:lazyr:load:pandas(.DataFrame)
 ```
 
 ## See Also
@@ -90,6 +90,9 @@ INFO:lazyr:load:pandas on accessing its attribute 'DataFrame'
 This project falls under the BSD 3-Clause License.
 
 ## History
+
+### v0.0.12
+* Prettier logs.
 
 ### v0.0.11
 * Fixed the meta-data.
