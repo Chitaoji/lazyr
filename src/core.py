@@ -65,7 +65,7 @@ def register(
             module_name, ignore=ignore, verbose=verbose
         )
     elif isinstance(m := sys.modules[module_name], LazyModule):
-        getattr(m, "!ignore")(ignore)
+        getattr(m, "_LazyModule__ignore")(ignore)
     return sys.modules[module_name]
 
 
@@ -91,7 +91,7 @@ def wakeup(module: "ModuleType"):
 
     """
     if isinstance(module, LazyModule):
-        getattr(module, "!wakeup")()
+        getattr(module, "_LazyModule__wakeup")()
 
 
 class LazyModule:
@@ -130,8 +130,6 @@ class LazyModule:
         return f"{self.__class__.__name__}({self.__name}{ignore_repr})"
 
     def __getattr__(self, __name: str) -> Any:
-        if __name.startswith("!"):
-            return getattr(self, f"_{self.__class__.__name__}__{__name[1:]}")
         self.__log_access(__name)
         if self.__module is None:
             if __name in self.__skipped:
