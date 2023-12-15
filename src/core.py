@@ -37,9 +37,9 @@ def register(
         as the anchor point from which to resolve the relative import to an absolute
         import, by default None.
     ignore : Optional[List[str]], optional
-        Specifies the names of attributes to whose access will be ignored. The values
-        of the ignored attributes will be set to None, and a lazy module will no longer
-        be activated by the access to them.
+        Specifies the names of attributes to be ignored. The values of the ignored
+        attributes will be set to None, and a lazy module will no longer be activated
+        by the access to them.
     verbose : Literal[0, 1, 2, 3], optional
         Specifies the level of verbosity for logging. It accepts values from 0 to 3,
         where:
@@ -65,7 +65,7 @@ def register(
             module_name, ignore=ignore, verbose=verbose
         )
     elif isinstance(m := sys.modules[module_name], LazyModule):
-        getattr(m, "!ignore")(ignore)
+        getattr(m, "_LazyModule__ignore")(ignore)
     return sys.modules[module_name]
 
 
@@ -91,7 +91,7 @@ def wakeup(module: "ModuleType"):
 
     """
     if isinstance(module, LazyModule):
-        getattr(module, "!wakeup")()
+        getattr(module, "_LazyModule__wakeup")()
 
 
 class LazyModule:
@@ -117,7 +117,7 @@ class LazyModule:
         self.__ignore(ignore)
         self.__verbose = verbose
         self.__module: Optional[ModuleType] = None
-        self.__logger = self.__logging_import()
+        self.__logger = self.__logger_init()
 
         if p := self.__get_parent():
             register(p, ignore=[self.__get_suffix()], verbose=verbose)
@@ -130,9 +130,7 @@ class LazyModule:
         return f"{self.__class__.__name__}({self.__name}{ignore_repr})"
 
     def __getattr__(self, __name: str) -> Any:
-        if __name.startswith("!"):
-            return getattr(self, f"_{self.__class__.__name__}__{__name[1:]}")
-        self.__logging_access(__name)
+        self.__log_access(__name)
         if self.__module is None:
             if __name in self.__skipped:
                 if not sys._getframe(1).f_code.co_name == "_find_and_load_unlocked":
@@ -148,7 +146,7 @@ class LazyModule:
 
     def __wakeup(self, __name: Optional[str] = None) -> None:
         if self.__import_module():
-            self.__logging_load("__wakeup" if __name is None else __name)
+            self.__log_load("__wakeup" if __name is None else __name)
 
     def __ignore(self, ignore: Optional[List[str]] = None) -> None:
         if ignore is not None:
@@ -167,7 +165,7 @@ class LazyModule:
         self.__module = module
         return res
 
-    def __logging_import(self) -> Optional["logging.Logger"]:
+    def __logger_init(self) -> Optional["logging.Logger"]:
         if self.__verbose >= 1:
             logger = logging.getLogger("lazyr")
             logger.propagate = False
@@ -181,13 +179,13 @@ class LazyModule:
             return logger
         return None
 
-    def __logging_access(self, __name: str) -> None:
+    def __log_access(self, __name: str) -> None:
         if self.__verbose >= 2:
             self.__logger.debug(
                 "access:%s.%s%s", self.__name, __name, self.__get_frame_info(3)
             )
 
-    def __logging_load(self, __name: str) -> None:
+    def __log_load(self, __name: str) -> None:
         if self.__verbose >= 1:
             self.__logger.info(
                 "load:%s(.%s)%s",

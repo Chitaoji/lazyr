@@ -46,8 +46,8 @@ purpose, you can 'wake' up the module like this:
 ### Ignore attributes
 
 You can make a module even lazier by setting the `ignore` parameter of `register()`, which specifies
-the names of attributes to whose access will be ignored. The values of the ignored attributes will
-be set to None, and a lazy module will no longer be activated by the access to them.
+the names of attributes to be ignored. The values of the ignored attributes will be set to None, and
+a lazy module will no longer be activated by the access to them.
 
 ```py
 >>> import lazyr
@@ -78,7 +78,7 @@ DEBUG:lazyr:access:pandas.__spec__
 
 >>> df = pd.DataFrame
 DEBUG:lazyr:access:pandas.DataFrame
-INFO:lazyr:load:pandas on accessing its attribute 'DataFrame'
+INFO:lazyr:load:pandas(.DataFrame)
 ```
 
 ## See Also
