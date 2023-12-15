@@ -103,7 +103,7 @@ class LazyModule:
 
     """
 
-    __skipped: Set = {"__spec__", "__path__"}
+    __skipped_attrs = {"__spec__", "__path__"}
     __skipped_startswith = ("_ipython_", "_repr_")
 
     def __init__(
@@ -132,7 +132,7 @@ class LazyModule:
     def __getattr__(self, __name: str) -> Any:
         self.__log_access(__name)
         if self.__module is None:
-            if __name in self.__skipped:
+            if __name in self.__skipped_attrs:
                 if not sys._getframe(1).f_code.co_name == "_find_and_load_unlocked":
                     return None
             elif __name.startswith(self.__skipped_startswith):
