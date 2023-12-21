@@ -96,14 +96,14 @@ def wakeup(module: "ModuleType"):
 
 def isawake(module: Union["ModuleType", str]) -> bool:
     """
-    Checks if a module is a functional one (including real modules and lazy
-    modules that have been activated) or not.
+    Checks if a module is a functional one (including normal modules and lazy
+    modules that have been awakened already) or not.
 
     Parameters
     ----------
     module : Union[&quot;ModuleType&quot;, str]
-        Can be either a `ModuleType` object or a string representing the name of a
-        module.
+        Can be either a `ModuleType` object or a string representing the name of
+        a module.
 
     Returns
     -------
@@ -129,8 +129,8 @@ class LazyModule:
     """
     An implementation of a lazy module.
 
-    Note that this should NEVER be instantiated directly, but always through the module-level
-    function `lazyr.register()`.
+    Note that this should NEVER be instantiated directly, but always through the
+    module-level function `lazyr.register()`.
 
     """
 
@@ -161,7 +161,7 @@ class LazyModule:
         return f"{self.__class__.__name__}({self.__name}{ignore_repr})"
 
     def __getattr__(self, __name: str) -> Any:
-        self.__access_logging(__name)
+        self.__debug_access(__name)
         if not self.__module:
             if __name in self.__skipped_attrs:
                 if not sys._getframe(1).f_code.co_name == "_find_and_load_unlocked":
@@ -177,7 +177,7 @@ class LazyModule:
 
     def __wakeup(self, __name: Optional[str] = None) -> None:
         if self.__import_module():
-            self.__wakeup_logging("__wakeup" if __name is None else __name)
+            self.__info_wakeup("__wakeup" if __name is None else __name)
 
     def __ignore(self, ignore: Optional[List[str]] = None) -> None:
         if ignore is not None:
@@ -210,16 +210,16 @@ class LazyModule:
             return logger
         return None
 
-    def __access_logging(self, __name: str) -> None:
+    def __debug_access(self, __name: str) -> None:
         if self.__verbose >= 2:
             self.__logger.debug(
                 "access:%s.%s%s", self.__name, __name, self.__get_frame_info(3)
             )
 
-    def __wakeup_logging(self, __name: str) -> None:
+    def __info_wakeup(self, __name: str) -> None:
         if self.__verbose >= 1:
             self.__logger.info(
-                "activate:%s(.%s)%s",
+                "load:%s(.%s)%s",
                 self.__name,
                 __name,
                 self.__get_frame_info(4),
