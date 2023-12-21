@@ -9,12 +9,12 @@ import importlib
 import inspect
 import logging
 import sys
-from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set
+from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set, Union
 
 if TYPE_CHECKING:
     from types import ModuleType
 
-__all__ = ["register", "wakeup"]
+__all__ = ["register", "wakeup", "isawake"]
 
 
 def register(
@@ -94,6 +94,37 @@ def wakeup(module: "ModuleType"):
         getattr(module, "_LazyModule__wakeup")()
 
 
+def isawake(module: Union["ModuleType", str]) -> bool:
+    """
+    Checks if a module is a functional one (including real modules and lazy
+    modules that have been activated) or not.
+
+    Parameters
+    ----------
+    module : Union[&quot;ModuleType&quot;, str]
+        Can be either a `ModuleType` object or a string representing the name of a
+        module.
+
+    Returns
+    -------
+    bool
+        Whether the module is functional.
+
+    Raises
+    ------
+    ModuleNotFoundError
+        Raised when the module is not found.
+
+    """
+    if isinstance(module, str):
+        if module not in sys.modules:
+            raise ModuleNotFoundError(f"no module named '{module}'")
+        module = sys.modules[module]
+    if isinstance(module, LazyModule):
+        return bool(getattr(module, "_LazyModule__module"))
+    return True
+
+
 class LazyModule:
     """
     An implementation of a lazy module.
@@ -130,8 +161,8 @@ class LazyModule:
         return f"{self.__class__.__name__}({self.__name}{ignore_repr})"
 
     def __getattr__(self, __name: str) -> Any:
-        self.__log_access(__name)
-        if self.__module is None:
+        self.__access_logging(__name)
+        if not self.__module:
             if __name in self.__skipped_attrs:
                 if not sys._getframe(1).f_code.co_name == "_find_and_load_unlocked":
                     return None
@@ -146,7 +177,7 @@ class LazyModule:
 
     def __wakeup(self, __name: Optional[str] = None) -> None:
         if self.__import_module():
-            self.__log_load("__wakeup" if __name is None else __name)
+            self.__wakeup_logging("__wakeup" if __name is None else __name)
 
     def __ignore(self, ignore: Optional[List[str]] = None) -> None:
         if ignore is not None:
@@ -179,16 +210,16 @@ class LazyModule:
             return logger
         return None
 
-    def __log_access(self, __name: str) -> None:
+    def __access_logging(self, __name: str) -> None:
         if self.__verbose >= 2:
             self.__logger.debug(
                 "access:%s.%s%s", self.__name, __name, self.__get_frame_info(3)
             )
 
-    def __log_load(self, __name: str) -> None:
+    def __wakeup_logging(self, __name: str) -> None:
         if self.__verbose >= 1:
             self.__logger.info(
-                "load:%s(.%s)%s",
+                "activate:%s(.%s)%s",
                 self.__name,
                 __name,
                 self.__get_frame_info(4),
