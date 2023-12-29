@@ -122,8 +122,8 @@ def islazy(module: Union["ModuleType", str]) -> bool:
             raise ModuleNotFoundError(f"no module named '{module}'")
         module = sys.modules[module]
     if isinstance(module, LazyModule):
-        return bool(getattr(module, "_LazyModule__module"))
-    return True
+        return not bool(getattr(module, "_LazyModule__module"))
+    return False
 
 
 class LazyModule:
