@@ -36,7 +36,7 @@ There is also a simpler way to create a lazy module, but it may cause *type hint
 LazyModule(pandas)
 ```
 
-### Check a module
+### Check if a module is lazy
 
 Use `islazy()` to check if a module is lazy or not:
 
