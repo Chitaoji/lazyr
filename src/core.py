@@ -9,12 +9,12 @@ import importlib
 import inspect
 import logging
 import sys
-from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set
+from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set, Union
 
 if TYPE_CHECKING:
     from types import ModuleType
 
-__all__ = ["register", "wakeup"]
+__all__ = ["register", "wakeup", "islazy", "LazyModule"]
 
 
 def register(
@@ -94,12 +94,44 @@ def wakeup(module: "ModuleType"):
         getattr(module, "_LazyModule__wakeup")()
 
 
+def islazy(module: Union["ModuleType", str]) -> bool:
+    """
+    Checks if a module is lazy or not. Returns False if received a `LazyModule`
+    object that has not been activated yet, otherwise returns True. If only to
+    check the type of the module, please try `isinstance()`.
+
+    Parameters
+    ----------
+    module : Union[ModuleType, str]
+        Can be either a `ModuleType` object or a string representing the name of
+        a module.
+
+    Returns
+    -------
+    bool
+        If the module is lazy or not.
+
+    Raises
+    ------
+    ModuleNotFoundError
+        Raised when the module is not found.
+
+    """
+    if isinstance(module, str):
+        if module not in sys.modules:
+            raise ModuleNotFoundError(f"no module named '{module}'")
+        module = sys.modules[module]
+    if isinstance(module, LazyModule):
+        return not bool(getattr(module, "_LazyModule__module"))
+    return False
+
+
 class LazyModule:
     """
     An implementation of a lazy module.
 
-    Note that this should NEVER be instantiated directly, but always through the module-level
-    function `lazyr.register()`.
+    Note that this should NEVER be instantiated directly, but always through the
+    module-level function `lazyr.register()`.
 
     """
 
@@ -123,6 +155,8 @@ class LazyModule:
             register(p, ignore=[self.__get_suffix()], verbose=verbose)
 
     def __repr__(self):
+        if self.__module:
+            return repr(self.__module)
         if self.__ignored_attrs:
             ignore_repr = f", ignore={list(self.__ignored_attrs)}"
         else:
@@ -130,8 +164,8 @@ class LazyModule:
         return f"{self.__class__.__name__}({self.__name}{ignore_repr})"
 
     def __getattr__(self, __name: str) -> Any:
-        self.__log_access(__name)
-        if self.__module is None:
+        self.__debug_access(__name)
+        if not self.__module:
             if __name in self.__skipped_attrs:
                 if not sys._getframe(1).f_code.co_name == "_find_and_load_unlocked":
                     return None
@@ -146,7 +180,7 @@ class LazyModule:
 
     def __wakeup(self, __name: Optional[str] = None) -> None:
         if self.__import_module():
-            self.__log_load("__wakeup" if __name is None else __name)
+            self.__info_wakeup("__wakeup" if __name is None else __name)
 
     def __ignore(self, ignore: Optional[List[str]] = None) -> None:
         if ignore is not None:
@@ -179,13 +213,13 @@ class LazyModule:
             return logger
         return None
 
-    def __log_access(self, __name: str) -> None:
+    def __debug_access(self, __name: str) -> None:
         if self.__verbose >= 2:
             self.__logger.debug(
                 "access:%s.%s%s", self.__name, __name, self.__get_frame_info(3)
             )
 
-    def __log_load(self, __name: str) -> None:
+    def __info_wakeup(self, __name: str) -> None:
         if self.__verbose >= 1:
             self.__logger.info(
                 "load:%s(.%s)%s",
