@@ -154,6 +154,8 @@ class LazyModule:
             register(p, ignore=[self.__get_suffix()], verbose=verbose)
 
     def __repr__(self):
+        if self.__module:
+            return repr(self.__module)
         if self.__ignored_attrs:
             ignore_repr = f", ignore={list(self.__ignored_attrs)}"
         else:
