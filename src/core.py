@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set, Union
 if TYPE_CHECKING:
     from types import ModuleType
 
-__all__ = ["register", "wakeup", "isawake"]
+__all__ = ["register", "wakeup", "islazy", "LazyModule"]
 
 
 def register(
@@ -94,21 +94,22 @@ def wakeup(module: "ModuleType"):
         getattr(module, "_LazyModule__wakeup")()
 
 
-def isawake(module: Union["ModuleType", str]) -> bool:
+def islazy(module: Union["ModuleType", str]) -> bool:
     """
-    Checks if a module is a functional one (including normal modules and lazy
-    modules that have been awakened already) or not.
+    Checks if a module is lazy or not. Returns False if received a `LazyModule`
+    object that has not been activated yet, otherwise returns True. If only to
+    check the type of the module, please try `isinstance()`.
 
     Parameters
     ----------
-    module : Union[&quot;ModuleType&quot;, str]
+    module : Union[ModuleType, str]
         Can be either a `ModuleType` object or a string representing the name of
         a module.
 
     Returns
     -------
     bool
-        Whether the module is functional.
+        If the module is lazy or not.
 
     Raises
     ------

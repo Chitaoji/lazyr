@@ -91,6 +91,10 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 
+### v0.0.16
+* New function `islazy()`, for checking the status of a module.
+* Improved the representational strings of lazy modules.
+
 ### v0.0.15
 * Various improvements.
 
