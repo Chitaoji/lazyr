@@ -36,12 +36,23 @@ There is also a simpler way to create a lazy module, but it may cause *type hint
 LazyModule(pandas)
 ```
 
+### Check if a module is lazy
+
+Use `islazy()` to check if a module is lazy or not:
+
+```py
+>>> lazyr.islazy(pd)
+True
+```
+
 ### Wake up a module
 
 The lazy modules are not physically loaded until their attrubutes are imported or used, but sometimes you may want to activate a lazy module without accessing any of its attributes. On that purpose, you can 'wake' up the module like this:
 
 ```py
 >>> lazyr.wakeup(pd) # pandas is woken up and loaded
+>>> lazyr.islazy(pd)
+False
 ```
 
 ### Ignore attributes
