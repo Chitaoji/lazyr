@@ -42,9 +42,9 @@ LazyModule(pandas)
 LazyModule(pandas)
 ```
 
-### 检查模块是否为懒
+### 检查模块
 
-使用函数 `islazy()` 以检查一个模块是否为懒模块：
+使用函数 `islazy()` 以检查一个模块是否为尚未激活的懒模块：
 
 ```py
 >>> lazyr.islazy(pd)
