@@ -3,6 +3,11 @@ Creates lazily-imported modules in a more readable and safer way.
 
 A lazily-imported module (or a lazy module, to be short) is not physically loaded in the Python environment until its attributes are being accessed. This could be useful when you are importing some modules that are hardly used but take a lot of time to be loaded.
 
+## README.md
+
+* en [English](README.md)
+* zh_CN [简体中文](README.zh_CN.md)
+
 ## Installation
 
 ```sh
@@ -18,7 +23,7 @@ Make *pandas* become a lazy module, for example:
 >>> lazyr.register("pandas") # pandas is a lazy module from now on
 LazyModule(pandas)
 
->>> import pandas as pd
+>>> import pandas as pd # pandas is not loaded because it's lazy
 >>> pd
 LazyModule(pandas)
 
