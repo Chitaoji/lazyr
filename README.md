@@ -3,10 +3,10 @@ Creates lazily-imported modules in a more readable and safer way.
 
 A lazily-imported module (or a lazy module, to be short) is not physically loaded in the Python environment until its attributes are being accessed. This could be useful when you are importing some modules that are hardly used but take a lot of time to be loaded.
 
-## Readme
+## README.md
 
-- en [English](README.md)
-- zh_CN [简体中文](README.zh_CN.md)
+* en [English](README.md)
+* zh_CN [简体中文](README.zh_CN.md)
 
 ## Installation
 
