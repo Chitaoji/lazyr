@@ -25,8 +25,8 @@ $ pip install lazyr
 LazyModule(pandas) # 输出一个LazyModule对象
 
 >>> import pandas as pd # 由于pandas已被注册为懒模块，这条语句实际不起作用 
->>> pd # pandas会在环境中显示为一个LazyModule对象
-LazyModule(pandas)
+>>> pd
+LazyModule(pandas) # pandas会在环境中显示为一个LazyModule对象
 
 >>> df = pd.DataFrame # 由于属性被访问，pandas此时被激活和加载
 >>> df
