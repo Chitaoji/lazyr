@@ -17,15 +17,15 @@ $ pip install lazyr
 
 ## 用法
 ### 创建懒模块
-作为例子，我们试着把 *pandas* 变为懒模块：
+作为例子，我们试着把 *pandas* 变成懒模块：
 
 ```py
 >>> import lazyr
 >>> lazyr.register("pandas") # 注册pandas为懒模块
-LazyModule(pandas)
+LazyModule(pandas) # 输出一个LazyModule对象
 
 >>> import pandas as pd # 由于pandas已被注册为懒模块，这条语句实际不起作用 
->>> pd # pandas会显示为一个LazyModule对象
+>>> pd # pandas会在环境中显示为一个LazyModule对象
 LazyModule(pandas)
 
 >>> df = pd.DataFrame # 由于属性被访问，pandas此时被激活和加载
@@ -56,7 +56,7 @@ True
 一旦模块的属性被访问，懒模块将被自动激活和加载。如果想要主动地强制激活模块，可以使用 `wakeup()` 函数：
 
 ```py
->>> lazyr.wakeup(pd) # pandas被激活
+>>> lazyr.wakeup(pd) # pandas被强制激活
 >>> lazyr.islazy(pd)
 False
 ```

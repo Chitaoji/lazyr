@@ -21,10 +21,10 @@ Make *pandas* become a lazy module, for example:
 ```py
 >>> import lazyr
 >>> lazyr.register("pandas") # pandas is a lazy module from now on
-LazyModule(pandas)
+LazyModule(pandas) # output
 
->>> import pandas as pd # pandas is not loaded because it's lazy
->>> pd
+>>> import pandas as pd # pandas is not loaded as it's lazy
+>>> pd # pandas is replaced by a LazyModule object
 LazyModule(pandas)
 
 >>> df = pd.DataFrame # pandas is actually loaded now
