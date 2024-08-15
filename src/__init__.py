@@ -2,9 +2,14 @@
 # lazyr
 Creates lazily-imported modules in a more readable and safer way.
 
-A lazily-imported module (or a lazy module, to be short) is not physically loaded in the Python
-environment until its attributes are being accessed. This could be useful when you are importing
-some modules that are hardly used but take a lot of time to be loaded.
+A lazily-imported module (or a lazy module, to be short) is not physically loaded in the
+Python environment until its attributes are being accessed. This could be useful when
+you are importing some modules that are hardly used but take a lot of time to be loaded.
+
+## README.md
+
+* en [English](README.md)
+* zh_CN [简体中文](README.zh_CN.md)
 
 ## Usage
 ### Make a lazy module
@@ -13,18 +18,19 @@ Make *pandas* become a lazy module, for example:
 ```py
 >>> import lazyr
 >>> lazyr.register("pandas") # pandas is a lazy module from now on
-LazyModule(pandas)
+LazyModule(pandas) # output
 
->>> import pandas as pd
+>>> import pandas as pd # pandas is not loaded as it's lazy
 >>> pd
-LazyModule(pandas)
+LazyModule(pandas) # pandas is replaced by a LazyModule object
 
 >>> df = pd.DataFrame # pandas is actually loaded now
 >>> df
 <class 'pandas.core.frame.DataFrame'>
 ```
 
-There is also a simpler way to create a lazy module, but it may cause *type hints* to lose efficacy:
+There is also a simpler way to create a lazy module, but it may cause *type hints* to
+lose efficacy:
 
 ```py
 >>> import lazyr
@@ -33,25 +39,38 @@ There is also a simpler way to create a lazy module, but it may cause *type hint
 LazyModule(pandas)
 ```
 
+### Check if a module is lazy
+
+Use `islazy()` to check if a module is lazy or not:
+
+```py
+>>> lazyr.islazy(pd)
+True
+```
+
 ### Wake up a module
 
-The lazy modules are not physically loaded until their attrubutes are imported or used, but
-sometimes you may want to activate a lazy module without accessing any of its attributes. On that
-purpose, you can 'wake' up the module like this:
+The lazy modules are not physically loaded until their attrubutes are imported or used,
+but sometimes you may want to activate a lazy module without accessing any of its
+attributes. On that purpose, you can 'wake' up the module like this:
 
 ```py
 >>> lazyr.wakeup(pd) # pandas is woken up and loaded
+>>> lazyr.islazy(pd)
+False
 ```
 
 ### Ignore attributes
 
-You can make a module even lazier by setting the `ignore` parameter of `register()`, which specifies
-the names of attributes to be ignored. The values of the ignored attributes will be set to None, and
-a lazy module will no longer be activated by the access to them.
+You can make a module even lazier by setting the `ignore` parameter of `register()`,
+which specifies the names of attributes to be ignored. The values of the ignored
+attributes will be set to None, and a lazy module will no longer be activated by the
+access to them.
 
 ```py
 >>> import lazyr
->>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # Ignoring DataFrame and Series
+>>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # Ignoring DataFrame and
+Series
 LazyModule(pandas, ignore=['DataFrame', 'Series'])
 
 >>> from pandas import DataFrame # pandas is not loaded; DataFrame is set to None
@@ -65,8 +84,8 @@ LazyModule(pandas, ignore=['DataFrame', 'Series'])
 
 ### Logging
 
-Specify the `verbose` parameter when calling `register()` to see what exactly will happen to a lazy
-module during the runtime:
+Specify the `verbose` parameter when calling `register()` to see what exactly will
+happen to a lazy module during the runtime:
 
 ```py
 >>> import lazyr
