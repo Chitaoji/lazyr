@@ -1,8 +1,8 @@
 # lazyr
 
-一个创建懒加载 (Lazy-Importing) 模块的工具。
+一个创建懒加载 (lazily-imported) 模块的工具。
 
-懒加载模块在其属性被访问之前不会被实际加载到 Python 环境中。当您导入一些几乎不会使用，但加载耗时很久的模块时，使用懒模块可以节约程序的初始化时间。
+懒加载模块在import的时候不会被实际加载到 Python 环境中，只有在其属性被访问时，才会实际加载。当您导入一些几乎不会使用，但加载耗时很久的模块时，可以使用懒模块，节约程序的初始化时间。
 
 ## README.md
 
@@ -15,22 +15,22 @@
 $ pip install lazyr
 ```
 
-## 用法
+## 用例
 ### 创建懒模块
-作为例子，我们试着把 *pandas* 变成懒模块：
+举个例子，我们试试把 *pandas* 变成懒模块：
 
 ```py
 >>> import lazyr
 >>> lazyr.register("pandas") # 注册pandas为懒模块
-LazyModule(pandas) # 输出一个LazyModule对象
+LazyModule(pandas) # 这就是pandas所对应的LazyModule对象
 
->>> import pandas as pd # 由于pandas已被注册为懒模块，这条语句实际不起作用 
+>>> import pandas as pd # 由于pandas已被注册为懒模块，这条语句不会真正导入pandas 
 >>> pd
-LazyModule(pandas) # pandas会在环境中显示为一个LazyModule对象
+LazyModule(pandas) # pd被赋值为pandas所对应的LazyModule对象
 
->>> df = pd.DataFrame # 由于属性被访问，pandas此时被激活和加载
->>> df
-<class 'pandas.core.frame.DataFrame'>
+>>> df = pd.DataFrame # 由于属性被访问，pandas被激活和加载
+>>> pd
+<module 'pandas' from '/../..'>
 ```
 
 以下是一种更加简洁的写法, 但可能导致 *type hints* 失效：
@@ -80,7 +80,6 @@ LazyModule(pandas, ignore=['DataFrame', 'Series'])
 ```
 
 ### 日志
-
 
 在调用 `register()` 时指定 `verbose` 参数，可以看到关于模块的日志：
 

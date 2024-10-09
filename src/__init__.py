@@ -17,16 +17,16 @@ Make *pandas* become a lazy module, for example:
 
 ```py
 >>> import lazyr
->>> lazyr.register("pandas") # pandas is a lazy module from now on
-LazyModule(pandas) # output
+>>> lazyr.register("pandas") # pandas becomes a lazy module
+LazyModule(pandas) # this is the LazyModule object corresponding to pandas
 
->>> import pandas as pd # pandas is not loaded as it's lazy
+>>> import pandas as pd # pandas is not loaded since it's lazy
 >>> pd
-LazyModule(pandas) # pandas is replaced by a LazyModule object
+LazyModule(pandas) # pd is assigned the LazyModule object corresponding to pandas
 
 >>> df = pd.DataFrame # pandas is actually loaded now
->>> df
-<class 'pandas.core.frame.DataFrame'>
+>>> pd
+<module 'pandas' from '/../..'>
 ```
 
 There is also a simpler way to create a lazy module, but it may cause *type hints* to
