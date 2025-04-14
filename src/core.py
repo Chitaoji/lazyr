@@ -5,6 +5,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 `lazyr` namespace - use that instead.
 
 """
+
 import importlib
 import inspect
 import logging
@@ -151,8 +152,8 @@ class LazyModule:
         self.__module: Optional[ModuleType] = None
         self.__logger = self.__logger_init()
 
-        if p := self.__get_parent():
-            register(p, ignore=[self.__get_suffix()], verbose=verbose)
+        if p := _get_parent(self.__name):
+            register(p, ignore=[_get_suffix(self.__name)], verbose=verbose)
 
     def __repr__(self):
         if self.__module:
@@ -178,6 +179,12 @@ class LazyModule:
             self.__wakeup(__name)
         return getattr(self.__module, __name)
 
+    def __call__(self, *args, **kwargs) -> Any:
+        self.__debug_access("__call__")
+        if not self.__module:
+            self.__wakeup("__call__")
+        return self.__module(*args, **kwargs)
+
     def __wakeup(self, __name: Optional[str] = None) -> None:
         if self.__import_module():
             self.__info_wakeup("__wakeup" if __name is None else __name)
@@ -188,7 +195,7 @@ class LazyModule:
 
     def __import_module(self) -> bool:
         res: bool = False
-        for name in self.__get_family():
+        for name in _get_family(self.__name):
             if isinstance(m := sys.modules[name], self.__class__):
                 del sys.modules[name]
                 module = importlib.import_module(name)
@@ -234,14 +241,17 @@ class LazyModule:
         f = inspect.stack()[depth]
         return f" ----> {f[1]} --> {f[3]} --> {f[4][0].strip() if isinstance(f[4], list) else None}"
 
-    def __get_family(self) -> List[str]:
-        names: List[str] = [tmp := (splits := self.__name.split("."))[0]]
-        for i in splits[1:]:
-            names.append(tmp := f"{tmp}.{i}")
-        return names
 
-    def __get_parent(self) -> str:
-        return self.__name.rpartition(".")[0]
+def _get_family(name: str) -> List[str]:
+    names: List[str] = [tmp := (splits := name.split("."))[0]]
+    for i in splits[1:]:
+        names.append(tmp := f"{tmp}.{i}")
+    return names
 
-    def __get_suffix(self) -> str:
-        return self.__name.rpartition(".")[-1]
+
+def _get_parent(name: str) -> str:
+    return name.rpartition(".")[0]
+
+
+def _get_suffix(name: str) -> str:
+    return name.rpartition(".")[-1]
