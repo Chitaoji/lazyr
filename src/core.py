@@ -120,7 +120,7 @@ def islazy(module: Union["ModuleType", str]) -> bool:
     """
     if isinstance(module, str):
         if module not in sys.modules:
-            raise ModuleNotFoundError(f"no module named '{module}'")
+            raise ModuleNotFoundError(f"no module named {module!r}")
         module = sys.modules[module]
     if isinstance(module, LazyModule):
         return not bool(getattr(module, "_LazyModule__module"))
@@ -192,10 +192,10 @@ class LazyModule:
 
     def __ignore(self, ignore: Optional[List[str]] = None) -> None:
         if ignore is not None:
-            for suffix in ignore:
-                if not suffix in self.__ignored_attrs:
-                    register(f"{self.__name}.{suffix}", verbose=self.__verbose)
-            self.__ignored_attrs |= set(ignore)
+            for submodule in ignore:
+                if not submodule in self.__ignored_attrs:
+                    register(f"{self.__name}.{submodule}", verbose=self.__verbose)
+                    self.__ignored_attrs.add(submodule.partition(".")[0])
 
     def __import_module(self) -> None:
         for name in _get_family(self.__name):
@@ -204,8 +204,7 @@ class LazyModule:
                 try:
                     module = importlib.import_module(name)
                 except ModuleNotFoundError:
-                    parent, _, suffix = name.rpartition(".")
-                    module = getattr(sys.modules[parent], suffix)
+                    module = _get_from_sys_module(name)
             else:
                 module = m
         self.__module = module
@@ -251,3 +250,12 @@ def _get_family(name: str) -> List[str]:
     for i in splits[1:]:
         names.append(tmp := f"{tmp}.{i}")
     return names
+
+
+def _get_from_sys_module(name: str) -> "ModuleType":
+    if name in sys.modules:
+        return sys.modules[name]
+    parent, _, suffix = name.rpartition(".")
+    if parent:
+        return getattr(_get_from_sys_module(parent), suffix)
+    raise ModuleNotFoundError(f"no module named {name!r}")
