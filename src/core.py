@@ -145,15 +145,18 @@ class LazyModule:
         ignore: Optional[List[str]] = None,
         verbose: Literal[0, 1, 2, 3] = 0,
     ) -> None:
+        sys.modules[name] = None
+
         self.__name = name
         self.__ignored_attrs: Set[str] = set()
-        self.__ignore(ignore)
         self.__verbose = verbose
         self.__module: Optional[ModuleType] = None
         self.__logger = self.__logger_init()
+        self.__ignore(ignore)
 
-        if p := _get_parent(self.__name):
-            register(p, ignore=[_get_suffix(self.__name)], verbose=verbose)
+        parent, _, suffix = self.__name.rpartition(".")
+        if parent:
+            register(parent, ignore=[suffix], verbose=verbose)
 
     def __repr__(self):
         if self.__module:
@@ -173,9 +176,7 @@ class LazyModule:
             elif __name.startswith(self.__skipped_startswith):
                 return None
             elif __name in self.__ignored_attrs:
-                if (module_name := f"{self.__name}.{__name}") in sys.modules:
-                    return sys.modules[module_name]
-                return None
+                return sys.modules[f"{self.__name}.{__name}"]
             self.__wakeup(__name)
         return getattr(self.__module, __name)
 
@@ -191,6 +192,9 @@ class LazyModule:
 
     def __ignore(self, ignore: Optional[List[str]] = None) -> None:
         if ignore is not None:
+            for suffix in ignore:
+                if not suffix in self.__ignored_attrs:
+                    register(f"{self.__name}.{suffix}", verbose=self.__verbose)
             self.__ignored_attrs |= set(ignore)
 
     def __import_module(self) -> None:
@@ -247,11 +251,3 @@ def _get_family(name: str) -> List[str]:
     for i in splits[1:]:
         names.append(tmp := f"{tmp}.{i}")
     return names
-
-
-def _get_parent(name: str) -> str:
-    return name.rpartition(".")[0]
-
-
-def _get_suffix(name: str) -> str:
-    return name.rpartition(".")[-1]
