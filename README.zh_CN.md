@@ -63,22 +63,21 @@ False
 
 ### 属性忽略
 
-您可以通过设置 `register()` 的 `ignore` 参数来忽略掉一些属性。您需要输入待忽略属性的名称列表，这些属性将被模块自动忽略：它们的值将被设置为None，并且对它们的访问将不再导致懒模块被激活。
+您可以通过设置 `register()` 的 `ignore` 参数来忽略掉一些子模块。只需输入待忽略子模块的名称列表，这些子模块也将被识别为懒模块（与主模块一起）。
 
 ```py
->>> import lazyr
->>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # 忽略两个属性：DataFrame和Series
+>>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # 除了pandas本身，还忽略子模块DataFrame和Series
 LazyModule(pandas, ignore=['DataFrame', 'Series'])
-
->>> from pandas import DataFrame # DataFrame已被忽略，pandas未加载，DataFrame=None
->>> from pandas import Series # Series已被忽略，pandas未加载，Series=None
->>> from pandas import io # io不是被忽略的属性，所以pandas被加载
-
->>> from pandas import DataFrame # 从此DataFrame等被忽略的属性也可以正常使用了
->>> DataFrame
-<class 'pandas.core.frame.DataFrame'>
 ```
 
+以上语句和下面两行代码有同样的作用：
+
+```py
+>>> lazyr.register("pandas.DataFrame")
+LazyModule(pandas.DataFrame)
+>>> lazyr.register("pandas.Series")
+LazyModule(pandas.Series)
+```
 ### 日志
 
 在调用 `register()` 时指定 `verbose` 参数，可以看到关于模块的日志：
@@ -105,42 +104,3 @@ INFO:lazyr:load:pandas(.DataFrame)
 
 ## 许可
 本项目遵循 BSD 3-Clause 许可证.
-
-## 更新历史
-
-### v0.0.16
-* New function `islazy()`, for checking the status of a module.
-* Improved the representational strings of lazy modules.
-
-### v0.0.15
-* Various improvements.
-
-### v0.0.12
-* Prettier logs.
-
-### v0.0.11
-* Fixed the meta-data.
-* Performance enhancements.
-
-### v0.0.9
-* Updated LICENSE.
-
-### v0.0.7
-* Removed unnecessary objects from the main `lazyr` namespace.
-
-### v0.0.6
-* Improved logging:
-    * Created a separate logger named 'lazyr' for lazy modules;
-    * More detailed logs when `verbose` > 0.
-
-### v0.0.4
-* `LazyModule` no longer activated by `_ipython_*()` or `_repr_*()` methods.
-
-### v0.0.3
-* Various improvements.
-
-### v0.0.2
-* New function `wakeup()`, for compulsively activating modules.
-
-### v0.0.1
-* Initial release.

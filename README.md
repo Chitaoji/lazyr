@@ -35,10 +35,7 @@ LazyModule(pandas) # pd is assigned the LazyModule object instead
 There is also a simpler way to create a lazy module, but it may cause *type hints* to lose efficacy:
 
 ```py
->>> import lazyr
 >>> pd = lazyr.register("pandas")
->>> pd
-LazyModule(pandas)
 ```
 
 ### Check if a module is lazy
@@ -62,20 +59,20 @@ False
 
 ### Ignore attributes
 
-You can make a module even lazier by setting the `ignore` parameter of `register()`, which specifies the names of attributes to be ignored. The values of the ignored attributes will be set to None, and a lazy module will no longer be activated by the access to them.
+You can make a module even lazier by setting the `ignore` parameter of `register()`, which specifies the names of submodules to become lazy besides the main module.
 
 ```py
->>> import lazyr
->>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # Ignoring DataFrame and Series
+>>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # make DataFrame and Series lazy, too
 LazyModule(pandas, ignore=['DataFrame', 'Series'])
+```
 
->>> from pandas import DataFrame # pandas is not loaded; DataFrame is set to None
->>> from pandas import Series # pandas is not loaded; Series is set to None
->>> from pandas import io # pandas is loaded because 'io' is not an ignored attribute
+The statement above has the same effect as the following code piece:
 
->>> from pandas import DataFrame # DataFrame is loaded this time 
->>> DataFrame
-<class 'pandas.core.frame.DataFrame'>
+```py
+>>> lazyr.register("pandas.DataFrame")
+LazyModule(pandas.DataFrame)
+>>> lazyr.register("pandas.Series")
+LazyModule(pandas.Series)
 ```
 
 ### Logging
@@ -108,7 +105,7 @@ This project falls under the BSD 3-Clause License.
 ## History
 ### v0.0.18
 * Even objects that are not modules can be registered as lazy-modules now, e.g., `pandas.DataFrame`, `numpy.array`, etc.
-* The expression `register("foo", ignore=["bar"])` will have the same effect as `register("foo.bar")` now.
+* The statement `register("foo", ignore=["bar"])` will have the same effect as `register("foo.bar")` now.
 
 ### v0.0.17
 * Updated README.
