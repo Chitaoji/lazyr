@@ -106,6 +106,8 @@ INFO:lazyr:load:pandas(.DataFrame)
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.0.18
+* Updated README.
 
 ### v0.0.17
 * Updated README.

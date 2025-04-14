@@ -186,25 +186,25 @@ class LazyModule:
         return self.__module(*args, **kwargs)
 
     def __wakeup(self, __name: Optional[str] = None) -> None:
-        if self.__import_module():
-            self.__info_wakeup("__wakeup" if __name is None else __name)
+        self.__import_module()
+        self.__info_wakeup("__wakeup" if __name is None else __name)
 
     def __ignore(self, ignore: Optional[List[str]] = None) -> None:
         if ignore is not None:
             self.__ignored_attrs |= set(ignore)
 
-    def __import_module(self) -> bool:
-        res: bool = False
+    def __import_module(self) -> None:
         for name in _get_family(self.__name):
             if isinstance(m := sys.modules[name], self.__class__):
                 del sys.modules[name]
-                module = importlib.import_module(name)
-                if name == self.__name:
-                    res = True
+                try:
+                    module = importlib.import_module(name)
+                except ModuleNotFoundError:
+                    parent, _, suffix = name.rpartition(".")
+                    module = getattr(sys.modules[parent], suffix)
             else:
                 module = m
         self.__module = module
-        return res
 
     def __logger_init(self) -> Optional["logging.Logger"]:
         if self.__verbose >= 1:
