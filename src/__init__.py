@@ -13,30 +13,27 @@ you are importing some modules that are hardly used but take a lot of time to be
 
 ## Usage
 ### Make a lazy module
-Make *pandas* become a lazy module, for example:
+Make *numpy* become a lazy module, for example:
 
 ```py
 >>> import lazyr
->>> lazyr.register("pandas") # pandas becomes a lazy module
-LazyModule(pandas) # this is the LazyModule object corresponding to pandas
+>>> lazyr.register("numpy") # numpy becomes a lazy module
+LazyModule(numpy) # this is the LazyModule object
 
->>> import pandas as pd # pandas is not loaded since it's lazy
->>> pd
-LazyModule(pandas) # pd is assigned the LazyModule object corresponding to pandas
+>>> import numpy as np # numpy is not loaded since it's lazy
+>>> np
+LazyModule(numpy) # np is assigned the LazyModule object instead
 
->>> df = pd.DataFrame # pandas is actually loaded now
->>> pd
-<module 'pandas' from '/../..'>
+>>> arr = np.array([]) # numpy is actually loaded now
+>>> np
+<module 'numpy' from '/../..'>
 ```
 
 There is also a simpler way to create a lazy module, but it may cause *type hints* to
 lose efficacy:
 
 ```py
->>> import lazyr
->>> pd = lazyr.register("pandas")
->>> pd
-LazyModule(pandas)
+>>> np = lazyr.register("numpy")
 ```
 
 ### Check if a module is lazy
@@ -44,7 +41,8 @@ LazyModule(pandas)
 Use `islazy()` to check if a module is lazy or not:
 
 ```py
->>> lazyr.islazy(pd)
+>>> scipy = lazyr.register("scipy")
+>>> lazyr.islazy(scipy)
 True
 ```
 
@@ -52,34 +50,40 @@ True
 
 The lazy modules are not physically loaded until their attrubutes are imported or used,
 but sometimes you may want to activate a lazy module without accessing any of its
-attributes. On that purpose, you can 'wake' up the module like this:
+attributes. On that purpose, you can 'wake up' the module like this:
 
 ```py
->>> lazyr.wakeup(pd) # pandas is woken up and loaded
->>> lazyr.islazy(pd)
+>>> lazyr.wakeup(scipy) # scipy is woken up and loaded
+>>> lazyr.islazy(scipy)
 False
 ```
 
 ### Ignore attributes
 
 You can make a module even lazier by setting the `ignore` parameter of `register()`,
-which specifies the names of attributes to be ignored. The values of the ignored
-attributes will be set to None, and a lazy module will no longer be activated by the
-access to them.
+which specifies the names of submodules to be ignored. The ignored submodules will
+become lazy modules, too.
 
 ```py
->>> import lazyr
->>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # Ignoring DataFrame and
-Series
+>>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # make DataFrame and Series
+lazy modules
 LazyModule(pandas, ignore=['DataFrame', 'Series'])
+```
 
->>> from pandas import DataFrame # pandas is not loaded; DataFrame is set to None
->>> from pandas import Series # pandas is not loaded; Series is set to None
->>> from pandas import io # pandas is loaded because 'io' is not an ignored attribute
+The statement above has roughly the same effect as the following code piece:
 
->>> from pandas import DataFrame # DataFrame is loaded this time
->>> DataFrame
-<class 'pandas.core.frame.DataFrame'>
+```py
+>>> _, _ = lazyr.register("pandas.DataFrame"), lazyr.register("pandas.Series")
+```
+
+### List all lazy modules
+
+Use `listall()` to check all the inactivated lazy modules in the system:
+
+```py
+>>> lazyr.listall()
+[LazyModule(pandas, ignore=['Series', 'DataFrame']), LazyModule(pandas.DataFrame),
+LazyModule(pandas.Series)]
 ```
 
 ### Logging
@@ -88,16 +92,18 @@ Specify the `verbose` parameter when calling `register()` to see what exactly wi
 happen to a lazy module during the runtime:
 
 ```py
->>> import lazyr
->>> _ = lazyr.register("pandas", verbose=2)
-INFO:lazyr:import:pandas
+>>> _ = lazyr.register("matplotlib.pyplot", verbose=2)
+INFO:lazyr:register:matplotlib.pyplot
+INFO:lazyr:register:matplotlib
 
->>> import pandas as pd
-DEBUG:lazyr:access:pandas.__spec__
+>>> import matplotlib.pyplot as plt
+DEBUG:lazyr:access:matplotlib.pyplot.__spec__
+DEBUG:lazyr:access:matplotlib.__spec__
+DEBUG:lazyr:access:matplotlib.pyplot
 
->>> df = pd.DataFrame
-DEBUG:lazyr:access:pandas.DataFrame
-INFO:lazyr:load:pandas(.DataFrame)
+>>> plot = plt.plot
+DEBUG:lazyr:access:matplotlib.pyplot.plot
+INFO:lazyr:load:matplotlib.pyplot(.plot)
 ```
 
 ## See Also
