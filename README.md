@@ -16,26 +16,26 @@ $ pip install lazyr
 
 ## Usage
 ### Make a lazy module
-Make *pandas* become a lazy module, for example:
+Make *numpy* become a lazy module, for example:
 
 ```py
 >>> import lazyr
->>> lazyr.register("pandas") # pandas becomes a lazy module
-LazyModule(pandas) # this is the LazyModule object
+>>> lazyr.register("numpy") # numpy becomes a lazy module
+LazyModule(numpy) # this is the LazyModule object
 
->>> import pandas as pd # pandas is not loaded since it's lazy
->>> pd
-LazyModule(pandas) # pd is assigned the LazyModule object instead
+>>> import numpy as np # numpy is not loaded since it's lazy
+>>> np
+LazyModule(numpy) # np is assigned the LazyModule object instead
 
->>> df = pd.DataFrame # pandas is actually loaded now
->>> pd
-<module 'pandas' from '/../..'>
+>>> arr = np.array([]) # numpy is actually loaded now
+>>> np
+<module 'numpy' from '/../..'>
 ```
 
 There is also a simpler way to create a lazy module, but it may cause *type hints* to lose efficacy:
 
 ```py
->>> pd = lazyr.register("pandas")
+>>> np = lazyr.register("numpy")
 ```
 
 ### Check if a module is lazy
@@ -43,36 +43,43 @@ There is also a simpler way to create a lazy module, but it may cause *type hint
 Use `islazy()` to check if a module is lazy or not:
 
 ```py
->>> lazyr.islazy(pd)
+>>> scipy = lazyr.register("scipy")
+>>> lazyr.islazy(scipy)
 True
 ```
 
 ### Wake up a module
 
-The lazy modules are not physically loaded until their attrubutes are imported or used, but sometimes you may want to activate a lazy module without accessing any of its attributes. On that purpose, you can 'wake' up the module like this:
+The lazy modules are not physically loaded until their attrubutes are imported or used, but sometimes you may want to activate a lazy module without accessing any of its attributes. On that purpose, you can 'wake up' the module like this:
 
 ```py
->>> lazyr.wakeup(pd) # pandas is woken up and loaded
->>> lazyr.islazy(pd)
+>>> lazyr.wakeup(scipy) # scipy is woken up and loaded
+>>> lazyr.islazy(scipy)
 False
 ```
 
 ### Ignore attributes
 
-You can make a module even lazier by setting the `ignore` parameter of `register()`, which specifies the names of submodules to become lazy besides the main module.
+You can make a module even lazier by setting the `ignore` parameter of `register()`, which specifies the names of submodules to be ignored. The ignored submodules will become lazy modules, too.
 
 ```py
->>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # make DataFrame and Series lazy, too
+>>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # make DataFrame and Series lazy modules
 LazyModule(pandas, ignore=['DataFrame', 'Series'])
 ```
 
-The statement above has the same effect as the following code piece:
+The statement above has roughly the same effect as the following code piece:
 
 ```py
->>> lazyr.register("pandas.DataFrame")
-LazyModule(pandas.DataFrame)
->>> lazyr.register("pandas.Series")
-LazyModule(pandas.Series)
+>>> _, _ = lazyr.register("pandas.DataFrame"), lazyr.register("pandas.Series")
+```
+
+### List all lazy modules
+
+Use `listall()` to check all the inactivated lazy modules in the system:
+
+```py
+>>> lazyr.listall()
+[LazyModule(pandas, ignore=['Series', 'DataFrame']), LazyModule(pandas.DataFrame), LazyModule(pandas.Series)]
 ```
 
 ### Logging
@@ -80,16 +87,18 @@ LazyModule(pandas.Series)
 Specify the `verbose` parameter when calling `register()` to see what exactly will happen to a lazy module during the runtime:
 
 ```py
->>> import lazyr
->>> _ = lazyr.register("pandas", verbose=2)
-INFO:lazyr:import:pandas
+>>> _ = lazyr.register("matplotlib.pyplot", verbose=2)
+INFO:lazyr:import:matplotlib.pyplot
+INFO:lazyr:import:matplotlib
 
->>> import pandas as pd
-DEBUG:lazyr:access:pandas.__spec__
+>>> import matplotlib.pyplot as plt
+DEBUG:lazyr:access:matplotlib.pyplot.__spec__
+DEBUG:lazyr:access:matplotlib.__spec__
+DEBUG:lazyr:access:matplotlib.pyplot
 
->>> df = pd.DataFrame
-DEBUG:lazyr:access:pandas.DataFrame
-INFO:lazyr:load:pandas(.DataFrame)
+>>> plot = plt.plot
+DEBUG:lazyr:access:matplotlib.pyplot.plot
+INFO:lazyr:load:matplotlib.pyplot(.plot)
 ```
 
 ## See Also
@@ -106,6 +115,7 @@ This project falls under the BSD 3-Clause License.
 ### v0.0.18
 * Even objects that are not modules can be registered as lazy-modules now, e.g., `pandas.DataFrame`, `numpy.array`, etc.
 * The statement `register("foo", ignore=["bar"])` will have the same effect as `register("foo.bar")` now.
+* New function `list()`, for checking all the inactivated lazy modules in the system.
 
 ### v0.0.17
 * Updated README.

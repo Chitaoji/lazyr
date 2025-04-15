@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set, Union
 if TYPE_CHECKING:
     from types import ModuleType
 
-__all__ = ["register", "wakeup", "islazy", "LazyModule"]
+__all__ = ["register", "wakeup", "islazy", "listall", "LazyModule"]
 
 
 def register(
@@ -70,7 +70,7 @@ def register(
     return sys.modules[module_name]
 
 
-def __join_module_name(name: str, package: Optional[str] = None):
+def __join_module_name(name: str, package: Optional[str] = None) -> None:
     if package is None:
         return name
     if not name.startswith("."):
@@ -81,7 +81,7 @@ got '{name}' instead"
     return package + name
 
 
-def wakeup(module: "ModuleType"):
+def wakeup(module: "ModuleType") -> None:
     """
     Compulsively activates a lazy module by loading it as a normal one.
 
@@ -127,6 +127,23 @@ def islazy(module: Union["ModuleType", str]) -> bool:
     return False
 
 
+def listall() -> List["LazyModule"]:
+    """
+    List all the inactivated lazy modules.
+
+    Returns
+    -------
+    List[LazyModule]
+        List of lazy modules.
+
+    """
+    module_list: List["LazyModule"] = []
+    for m in sys.modules.values():
+        if isinstance(m, LazyModule) and not bool(getattr(m, "_LazyModule__module")):
+            module_list.append(m)
+    return module_list
+
+
 class LazyModule:
     """
     An implementation of a lazy module.
@@ -158,7 +175,7 @@ class LazyModule:
         if parent:
             register(parent, ignore=[suffix], verbose=verbose)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.__module:
             return repr(self.__module)
         if self.__ignored_attrs:
