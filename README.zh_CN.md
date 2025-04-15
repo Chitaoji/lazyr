@@ -17,29 +17,26 @@ $ pip install lazyr
 
 ## 用例
 ### 创建懒模块
-举个例子，我们试试把 *pandas* 变成懒模块：
+举个例子，我们试试把 *numpy* 变成懒模块：
 
 ```py
 >>> import lazyr
->>> lazyr.register("pandas") # 注册pandas为懒模块
-LazyModule(pandas) # 这就是pandas所对应的LazyModule对象
+>>> lazyr.register("numpy") # 注册numpy为懒模块
+LazyModule(numpy) # 这就是numpy所对应的LazyModule对象
 
->>> import pandas as pd # 由于pandas已被注册为懒模块，这条语句不会真正导入pandas 
->>> pd
-LazyModule(pandas) # pd被赋值为pandas所对应的LazyModule对象
+>>> import numpy as np # 由于numpy已被注册为懒模块，这条语句不会真正导入numpy 
+>>> np
+LazyModule(numpy) # np被赋值为numpy所对应的LazyModule对象
 
->>> df = pd.DataFrame # 由于属性被访问，pandas被激活和加载
->>> pd
-<module 'pandas' from '/../..'>
+>>> arr = np.array([]) # 由于属性被访问，numpy被激活和加载
+>>> np
+<module 'numpy' from '/../..'>
 ```
 
 以下是一种更加简洁的写法, 但可能导致 *type hints* 失效：
 
 ```py
->>> import lazyr
->>> pd = lazyr.register("pandas")
->>> pd
-LazyModule(pandas)
+>>> np = lazyr.register("numpy")
 ```
 
 ### 检查模块
@@ -47,7 +44,8 @@ LazyModule(pandas)
 使用函数 `islazy()` 以检查一个模块是否为尚未激活的懒模块：
 
 ```py
->>> lazyr.islazy(pd)
+>>> scipy = lazyr.register("scipy")
+>>> lazyr.islazy(scipy)
 True
 ```
 
@@ -56,27 +54,33 @@ True
 一旦模块的属性被访问，懒模块将被自动激活和加载。如果想要主动地强制激活模块，可以使用 `wakeup()` 函数：
 
 ```py
->>> lazyr.wakeup(pd) # pandas被强制激活
->>> lazyr.islazy(pd)
+>>> lazyr.wakeup(scipy) # scipy被强制激活
+>>> lazyr.islazy(scipy)
 False
 ```
 
 ### 属性忽略
 
-您可以通过设置 `register()` 的 `ignore` 参数来忽略掉一些属性。您需要输入待忽略属性的名称列表，这些属性将被模块自动忽略：它们的值将被设置为None，并且对它们的访问将不再导致懒模块被激活。
+您可以通过设置 `register()` 的 `ignore` 参数来忽略掉一些子模块。只需输入待忽略子模块的名称列表，这些子模块也将被注册为懒模块（与主模块一起）。
 
 ```py
->>> import lazyr
->>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # 忽略两个属性：DataFrame和Series
+>>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # 除了pandas本身，还忽略子模块DataFrame和Series
 LazyModule(pandas, ignore=['DataFrame', 'Series'])
+```
 
->>> from pandas import DataFrame # DataFrame已被忽略，pandas未加载，DataFrame=None
->>> from pandas import Series # Series已被忽略，pandas未加载，Series=None
->>> from pandas import io # io不是被忽略的属性，所以pandas被加载
+以上语句和下面两行代码有大致相同的作用：
 
->>> from pandas import DataFrame # 从此DataFrame等被忽略的属性也可以正常使用了
->>> DataFrame
-<class 'pandas.core.frame.DataFrame'>
+```py
+>>> _, _ = lazyr.register("pandas.DataFrame"), lazyr.register("pandas.Series")
+```
+
+### 列出懒模块
+
+使用 `listall()` 列出系统中所有未激活的懒模块：
+
+```py
+>>> lazyr.listall()
+[LazyModule(pandas, ignore=['Series', 'DataFrame']), LazyModule(pandas.DataFrame), LazyModule(pandas.Series)]
 ```
 
 ### 日志
@@ -84,16 +88,18 @@ LazyModule(pandas, ignore=['DataFrame', 'Series'])
 在调用 `register()` 时指定 `verbose` 参数，可以看到关于模块的日志：
 
 ```py
->>> import lazyr
->>> _ = lazyr.register("pandas", verbose=2)
-INFO:lazyr:import:pandas
+>>> _ = lazyr.register("matplotlib.pyplot", verbose=2)
+INFO:lazyr:register:matplotlib.pyplot
+INFO:lazyr:register:matplotlib
 
->>> import pandas as pd
-DEBUG:lazyr:access:pandas.__spec__
+>>> import matplotlib.pyplot as plt
+DEBUG:lazyr:access:matplotlib.pyplot.__spec__
+DEBUG:lazyr:access:matplotlib.__spec__
+DEBUG:lazyr:access:matplotlib.pyplot
 
->>> df = pd.DataFrame
-DEBUG:lazyr:access:pandas.DataFrame
-INFO:lazyr:load:pandas(.DataFrame)
+>>> plot = plt.plot
+DEBUG:lazyr:access:matplotlib.pyplot.plot
+INFO:lazyr:load:matplotlib.pyplot(.plot)
 ```
 
 ## 链接
@@ -105,42 +111,3 @@ INFO:lazyr:load:pandas(.DataFrame)
 
 ## 许可
 本项目遵循 BSD 3-Clause 许可证.
-
-## 更新历史
-
-### v0.0.16
-* New function `islazy()`, for checking the status of a module.
-* Improved the representational strings of lazy modules.
-
-### v0.0.15
-* Various improvements.
-
-### v0.0.12
-* Prettier logs.
-
-### v0.0.11
-* Fixed the meta-data.
-* Performance enhancements.
-
-### v0.0.9
-* Updated LICENSE.
-
-### v0.0.7
-* Removed unnecessary objects from the main `lazyr` namespace.
-
-### v0.0.6
-* Improved logging:
-    * Created a separate logger named 'lazyr' for lazy modules;
-    * More detailed logs when `verbose` > 0.
-
-### v0.0.4
-* `LazyModule` no longer activated by `_ipython_*()` or `_repr_*()` methods.
-
-### v0.0.3
-* Various improvements.
-
-### v0.0.2
-* New function `wakeup()`, for compulsively activating modules.
-
-### v0.0.1
-* Initial release.

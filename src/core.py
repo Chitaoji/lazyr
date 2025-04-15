@@ -5,6 +5,7 @@ NOTE: this module is private. All functions and objects are available in the mai
 `lazyr` namespace - use that instead.
 
 """
+
 import importlib
 import inspect
 import logging
@@ -14,7 +15,7 @@ from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set, Union
 if TYPE_CHECKING:
     from types import ModuleType
 
-__all__ = ["register", "wakeup", "islazy", "LazyModule"]
+__all__ = ["register", "wakeup", "islazy", "listall", "LazyModule"]
 
 
 def register(
@@ -69,7 +70,7 @@ def register(
     return sys.modules[module_name]
 
 
-def __join_module_name(name: str, package: Optional[str] = None):
+def __join_module_name(name: str, package: Optional[str] = None) -> None:
     if package is None:
         return name
     if not name.startswith("."):
@@ -80,7 +81,7 @@ got '{name}' instead"
     return package + name
 
 
-def wakeup(module: "ModuleType"):
+def wakeup(module: "ModuleType") -> None:
     """
     Compulsively activates a lazy module by loading it as a normal one.
 
@@ -119,11 +120,28 @@ def islazy(module: Union["ModuleType", str]) -> bool:
     """
     if isinstance(module, str):
         if module not in sys.modules:
-            raise ModuleNotFoundError(f"no module named '{module}'")
+            raise ModuleNotFoundError(f"no module named {module!r}")
         module = sys.modules[module]
     if isinstance(module, LazyModule):
         return not bool(getattr(module, "_LazyModule__module"))
     return False
+
+
+def listall() -> List["LazyModule"]:
+    """
+    List all the inactivated lazy modules.
+
+    Returns
+    -------
+    List[LazyModule]
+        List of lazy modules.
+
+    """
+    module_list: List["LazyModule"] = []
+    for m in sys.modules.values():
+        if isinstance(m, LazyModule) and not bool(getattr(m, "_LazyModule__module")):
+            module_list.append(m)
+    return module_list
 
 
 class LazyModule:
@@ -144,17 +162,20 @@ class LazyModule:
         ignore: Optional[List[str]] = None,
         verbose: Literal[0, 1, 2, 3] = 0,
     ) -> None:
+        sys.modules[name] = None
+
         self.__name = name
         self.__ignored_attrs: Set[str] = set()
-        self.__ignore(ignore)
         self.__verbose = verbose
         self.__module: Optional[ModuleType] = None
         self.__logger = self.__logger_init()
+        self.__ignore(ignore)
 
-        if p := self.__get_parent():
-            register(p, ignore=[self.__get_suffix()], verbose=verbose)
+        parent, _, suffix = self.__name.rpartition(".")
+        if parent:
+            register(parent, ignore=[suffix], verbose=verbose)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if self.__module:
             return repr(self.__module)
         if self.__ignored_attrs:
@@ -172,32 +193,38 @@ class LazyModule:
             elif __name.startswith(self.__skipped_startswith):
                 return None
             elif __name in self.__ignored_attrs:
-                if (module_name := f"{self.__name}.{__name}") in sys.modules:
-                    return sys.modules[module_name]
-                return None
+                return sys.modules[f"{self.__name}.{__name}"]
             self.__wakeup(__name)
         return getattr(self.__module, __name)
 
+    def __call__(self, *args, **kwargs) -> Any:
+        self.__debug_access("__call__")
+        if not self.__module:
+            self.__wakeup("__call__")
+        return self.__module(*args, **kwargs)
+
     def __wakeup(self, __name: Optional[str] = None) -> None:
-        if self.__import_module():
-            self.__info_wakeup("__wakeup" if __name is None else __name)
+        self.__import_module()
+        self.__info_wakeup("__wakeup" if __name is None else __name)
 
     def __ignore(self, ignore: Optional[List[str]] = None) -> None:
         if ignore is not None:
-            self.__ignored_attrs |= set(ignore)
+            for submodule in ignore:
+                if not submodule in self.__ignored_attrs:
+                    register(f"{self.__name}.{submodule}", verbose=self.__verbose)
+                    self.__ignored_attrs.add(submodule.partition(".")[0])
 
-    def __import_module(self) -> bool:
-        res: bool = False
-        for name in self.__get_family():
+    def __import_module(self) -> None:
+        for name in _get_family(self.__name):
             if isinstance(m := sys.modules[name], self.__class__):
                 del sys.modules[name]
-                module = importlib.import_module(name)
-                if name == self.__name:
-                    res = True
+                try:
+                    module = importlib.import_module(name)
+                except ModuleNotFoundError:
+                    module = _get_from_sys_module(name)
             else:
                 module = m
         self.__module = module
-        return res
 
     def __logger_init(self) -> Optional["logging.Logger"]:
         if self.__verbose >= 1:
@@ -209,7 +236,7 @@ class LazyModule:
                 fm = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
                 sh.setFormatter(fm)
                 logger.addHandler(sh)
-            logger.info("import:%s", self.__name)
+            logger.info("register:%s", self.__name)
             return logger
         return None
 
@@ -234,14 +261,18 @@ class LazyModule:
         f = inspect.stack()[depth]
         return f" ----> {f[1]} --> {f[3]} --> {f[4][0].strip() if isinstance(f[4], list) else None}"
 
-    def __get_family(self) -> List[str]:
-        names: List[str] = [tmp := (splits := self.__name.split("."))[0]]
-        for i in splits[1:]:
-            names.append(tmp := f"{tmp}.{i}")
-        return names
 
-    def __get_parent(self) -> str:
-        return self.__name.rpartition(".")[0]
+def _get_family(name: str) -> List[str]:
+    names: List[str] = [tmp := (splits := name.split("."))[0]]
+    for i in splits[1:]:
+        names.append(tmp := f"{tmp}.{i}")
+    return names
 
-    def __get_suffix(self) -> str:
-        return self.__name.rpartition(".")[-1]
+
+def _get_from_sys_module(name: str) -> "ModuleType":
+    if name in sys.modules:
+        return sys.modules[name]
+    parent, _, suffix = name.rpartition(".")
+    if parent:
+        return getattr(_get_from_sys_module(parent), suffix)
+    raise ModuleNotFoundError(f"no module named {name!r}")
