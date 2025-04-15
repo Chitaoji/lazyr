@@ -236,7 +236,7 @@ class LazyModule:
                 fm = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
                 sh.setFormatter(fm)
                 logger.addHandler(sh)
-            logger.info("import:%s", self.__name)
+            logger.info("register:%s", self.__name)
             return logger
         return None
 
