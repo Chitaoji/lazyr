@@ -112,6 +112,9 @@ INFO:lazyr:load:matplotlib.pyplot(.plot)
 This project falls under the BSD 3-Clause License.
 
 ## History
+## v0.0.19
+* New global variable `VERBOSE`.
+
 ### v0.0.18
 * Even objects that are not modules can be registered as lazy-modules now, e.g., `pandas.DataFrame`, `numpy.array`, etc.
 * The statement `register("foo", ignore=["bar"])` will have the same effect as `register("foo.bar")` now.
