@@ -15,14 +15,16 @@ from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set, Union
 if TYPE_CHECKING:
     from types import ModuleType
 
-__all__ = ["register", "wakeup", "islazy", "listall", "LazyModule"]
+__all__ = ["register", "wakeup", "islazy", "listall", "LazyModule", "VERBOSE"]
+
+VERBOSE = 0
 
 
 def register(
     name: str,
     package: Optional[str] = None,
     ignore: Optional[List[str]] = None,
-    verbose: Literal[0, 1, 2, 3] = 0,
+    verbose: Optional[Literal[0, 1, 2, 3]] = None,
 ) -> "ModuleType":
     """
     Register a module as a lazy one. A lazy module is not physically loaded in the
@@ -48,7 +50,7 @@ def register(
             1 : logs the importing and loading of lazy modules with level INFO;
             2 : also logs the accessing of lazy modules' attributes with level DEBUG;
             3 : adds stack infomation, NOTE: this will SLOW down the program.
-        By default 0.
+        By default `VERBOSE`.
 
     Returns
     -------
@@ -61,6 +63,8 @@ def register(
         Raised if not a relative import when the `package` argument is provided.
 
     """
+    if verbose is None:
+        verbose = getattr(sys.modules[__name__.rpartition(".")[0]], "VERBOSE")
     if (module_name := __join_module_name(name, package=package)) not in sys.modules:
         sys.modules[module_name] = LazyModule(
             module_name, ignore=ignore, verbose=verbose
