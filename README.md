@@ -112,6 +112,9 @@ INFO:lazyr:load --> matplotlib.pyplot(.plot)
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.0.20
+* Updated the logging function.
+
 ### v0.0.19
 * New global variable `VERBOSE`.
 
