@@ -263,7 +263,10 @@ class LazyModule:
         if self.__verbose < 3:
             return ""
         f = inspect.stack()[depth]
-        return f" ----> {f[1]} --> {f[3]} --> {f[4][0].strip() if isinstance(f[4], list) else None}"
+        return (
+            f" ----> {f[1]} --> {f[3]} --> "
+            f"{f[4][0].strip() if isinstance(f[4], list) else None}"
+        )
 
 
 def _get_family(name: str) -> List[str]:
