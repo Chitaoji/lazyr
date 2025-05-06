@@ -112,7 +112,7 @@ INFO:lazyr:load --> matplotlib.pyplot(.plot)
 This project falls under the BSD 3-Clause License.
 
 ## History
-### v0.0.20
+### v0.0.21
 * Updated the logging function.
 
 ### v0.0.19

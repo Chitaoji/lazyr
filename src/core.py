@@ -263,8 +263,9 @@ class LazyModule:
         if self.__verbose < 3:
             return ""
         f = inspect.stack()[depth]
+        func_name = f[3] + ("" if f[3].startswith("<") and f[3].endswith(">") else "()")
         return (
-            f" at {f[1]}:{f[2]} in {f[3]} --> "
+            f" at {f[1]}:{f[2]} in {func_name} --> "
             f"{f[4][0].strip() if isinstance(f[4], list) else None}"
         )
 
