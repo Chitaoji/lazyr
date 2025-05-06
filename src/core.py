@@ -240,20 +240,20 @@ class LazyModule:
                 fm = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
                 sh.setFormatter(fm)
                 logger.addHandler(sh)
-            logger.info("register:%s", self.__name)
+            logger.info("register --> %s", self.__name)
             return logger
         return None
 
     def __debug_access(self, __name: str) -> None:
         if self.__verbose >= 2:
             self.__logger.debug(
-                "access:%s.%s%s", self.__name, __name, self.__get_frame_info(3)
+                "access --> %s.%s%s", self.__name, __name, self.__get_frame_info(3)
             )
 
     def __info_wakeup(self, __name: str) -> None:
         if self.__verbose >= 1:
             self.__logger.info(
-                "load:%s(.%s)%s",
+                "load --> %s(.%s)%s",
                 self.__name,
                 __name,
                 self.__get_frame_info(4),
@@ -264,7 +264,7 @@ class LazyModule:
             return ""
         f = inspect.stack()[depth]
         return (
-            f" ----> {f[1]} --> {f[3]} --> "
+            f" at {f[1]}:{f[2]} in {f[3]} --> "
             f"{f[4][0].strip() if isinstance(f[4], list) else None}"
         )
 

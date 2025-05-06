@@ -88,17 +88,17 @@ Specify the `verbose` parameter when calling `register()` to see what exactly wi
 
 ```py
 >>> _ = lazyr.register("matplotlib.pyplot", verbose=2)
-INFO:lazyr:register:matplotlib.pyplot
-INFO:lazyr:register:matplotlib
+INFO:lazyr:register --> matplotlib.pyplot
+INFO:lazyr:register --> matplotlib
 
 >>> import matplotlib.pyplot as plt
-DEBUG:lazyr:access:matplotlib.pyplot.__spec__
-DEBUG:lazyr:access:matplotlib.__spec__
-DEBUG:lazyr:access:matplotlib.pyplot
+DEBUG:lazyr:access --> matplotlib.pyplot.__spec__
+DEBUG:lazyr:access --> matplotlib.__spec__
+DEBUG:lazyr:access --> matplotlib.pyplot
 
 >>> plot = plt.plot
-DEBUG:lazyr:access:matplotlib.pyplot.plot
-INFO:lazyr:load:matplotlib.pyplot(.plot)
+DEBUG:lazyr:access --> matplotlib.pyplot.plot
+INFO:lazyr:load --> matplotlib.pyplot(.plot)
 ```
 
 ## See Also
