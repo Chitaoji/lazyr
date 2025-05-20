@@ -60,7 +60,8 @@ def register(
     Raises
     ------
     TypeError
-        Raised if not a relative import when the `package` argument is provided.
+        Raised if an absolute import when the `package` argument is provided, or if a
+        relative import without the `package` argument.
 
     """
     if verbose is None:
@@ -75,14 +76,18 @@ def register(
 
 
 def __join_module_name(name: str, package: Optional[str] = None) -> None:
+    if name.startswith("."):
+        if package is None:
+            raise TypeError(
+                "expected an absolute import when the 'package' argument is not "
+                "provided"
+            )
+        return package + name
     if package is None:
         return name
-    if not name.startswith("."):
-        raise TypeError(
-            f"expected a relative import when the `package` argument is provided, \
-got '{name}' instead"
-        )
-    return package + name
+    raise TypeError(
+        "expected a relative import when the 'package' argument is provided"
+    )
 
 
 def wakeup(module: "ModuleType") -> None:
