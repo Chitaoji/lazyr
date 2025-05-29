@@ -112,8 +112,8 @@ INFO:lazyr:load --> matplotlib.pyplot(.plot)
 This project falls under the BSD 3-Clause License.
 
 ## History
-### v0.0.22
-* Updated `register()`: now error will be raised when receiving a relative import without the `package` argument.
+### v0.0.23
+* Updated `register()`: now error will be raised when attempting relative import with no known parent package.
 
 ### v0.0.21
 * Updated the logging function.

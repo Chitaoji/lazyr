@@ -78,10 +78,11 @@ def register(
 def __join_module_name(name: str, package: Optional[str] = None) -> None:
     if name.startswith("."):
         if package is None:
-            raise TypeError(
-                "expected an absolute import when the 'package' argument is not "
-                "provided"
-            )
+            frame = sys._getframe(2)  # pylint: disable=protected-access
+            if (package := frame.f_globals["__name__"]) == "__main__":
+                raise TypeError(
+                    "attempted relative import with no known parent package"
+                )
         return package + name
     if package is None:
         return name
