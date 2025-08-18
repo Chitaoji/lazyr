@@ -7,9 +7,9 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import importlib
-import inspect
 import logging
 import sys
+import traceback
 from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set, Union
 
 if TYPE_CHECKING:
@@ -72,6 +72,7 @@ def register(
         )
     elif isinstance(m := sys.modules[module_name], LazyModule):
         getattr(m, "_LazyModule__ignore")(ignore)
+        getattr(m, "_LazyModule__set_verbose")(verbose)
     return sys.modules[module_name]
 
 
@@ -176,9 +177,9 @@ class LazyModule:
 
         self.__name = name
         self.__ignored_attrs: Set[str] = set()
-        self.__verbose = verbose
+        self.__logger: Optional["logging.Logger"] = None
         self.__module: Optional[ModuleType] = None
-        self.__logger = self.__logger_init()
+        self.__set_verbose(verbose)
         self.__ignore(ignore)
 
         parent, _, suffix = self.__name.rpartition(".")
@@ -236,43 +237,45 @@ class LazyModule:
                 module = m
         self.__module = module
 
-    def __logger_init(self) -> Optional["logging.Logger"]:
-        if self.__verbose >= 1:
-            logger = logging.getLogger("lazyr")
-            logger.propagate = False
-            if not logger.hasHandlers():
-                logger.setLevel(logging.DEBUG)
-                sh = logging.StreamHandler()
-                fm = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
-                sh.setFormatter(fm)
-                logger.addHandler(sh)
-            logger.info("register --> %s", self.__name)
-            return logger
-        return None
+    def __set_verbose(self, verbose: int) -> None:
+        self.__verbose = verbose
+        if verbose >= 1 and self.__logger is None:
+            self.__logger_init()
+
+    def __logger_init(self) -> None:
+        logger = logging.getLogger("lazyr")
+        logger.propagate = False
+        if not logger.hasHandlers():
+            logger.setLevel(logging.DEBUG)
+            sh = logging.StreamHandler()
+            fm = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
+            sh.setFormatter(fm)
+            logger.addHandler(sh)
+        logger.info("register -> %s%s", self.__name, self.__get_frame_info(5))
+        self.__logger = logger
 
     def __debug_access(self, __name: str) -> None:
         if self.__verbose >= 2:
             self.__logger.debug(
-                "access --> %s.%s%s", self.__name, __name, self.__get_frame_info(3)
+                "access -> %s.%s%s", self.__name, __name, self.__get_frame_info(3)
             )
 
     def __info_wakeup(self, __name: str) -> None:
         if self.__verbose >= 1:
             self.__logger.info(
-                "load --> %s(.%s)%s",
+                "load -> %s(.%s)%s",
                 self.__name,
                 __name,
                 self.__get_frame_info(4),
             )
 
-    def __get_frame_info(self, depth: int) -> str:
+    def __get_frame_info(self, stacklevel: int) -> str:
         if self.__verbose < 3:
             return ""
-        f = inspect.stack()[depth]
-        func_name = f[3] + ("" if f[3].startswith("<") and f[3].endswith(">") else "()")
+        stack = traceback.extract_stack()[-1 - stacklevel]
         return (
-            f" at {f[1]}:{f[2]} in {func_name} --> "
-            f"{f[4][0].strip() if isinstance(f[4], list) else None}"
+            f"\n  file {stack.filename}, line {stack.lineno}, in {stack.name}"
+            f"\n    {stack.line if stack.line else '...'}"
         )
 
 

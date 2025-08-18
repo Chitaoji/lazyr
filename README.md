@@ -112,6 +112,10 @@ INFO:lazyr:load --> matplotlib.pyplot(.plot)
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.0.24
+* Updated `register()`: verbosity will be set to the argument `verbose` if lazy module exists.
+* Beautified the logging messages.
+
 ### v0.0.23
 * Updated `register()`: now error will be raised when attempting relative import with no known parent package.
 
