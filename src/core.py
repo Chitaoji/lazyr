@@ -275,7 +275,7 @@ class LazyModule:
         stack = traceback.extract_stack()[-1 - stacklevel]
         return (
             f"\n  file {stack.filename}, line {stack.lineno}, in {stack.name}"
-            f"\n    {stack.line}"
+            f"\n    {stack.line if stack.line else '...'}"
         )
 
 
