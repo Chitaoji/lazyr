@@ -72,6 +72,7 @@ def register(
         )
     elif isinstance(m := sys.modules[module_name], LazyModule):
         getattr(m, "_LazyModule__ignore")(ignore)
+        setattr(m, "_LazyModule__verbose", verbose)
     return sys.modules[module_name]
 
 
