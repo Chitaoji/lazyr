@@ -72,7 +72,7 @@ def register(
         )
     elif isinstance(m := sys.modules[module_name], LazyModule):
         getattr(m, "_LazyModule__ignore")(ignore)
-        setattr(m, "_LazyModule__verbose", verbose)
+        getattr(m, "_LazyModule__set_verbose")(verbose)
     return sys.modules[module_name]
 
 
@@ -177,9 +177,9 @@ class LazyModule:
 
         self.__name = name
         self.__ignored_attrs: Set[str] = set()
-        self.__verbose = verbose
+        self.__logger: Optional["logging.Logger"] = None
         self.__module: Optional[ModuleType] = None
-        self.__logger = self.__logger_init()
+        self.__set_verbose(verbose)
         self.__ignore(ignore)
 
         parent, _, suffix = self.__name.rpartition(".")
@@ -237,19 +237,22 @@ class LazyModule:
                 module = m
         self.__module = module
 
-    def __logger_init(self) -> Optional["logging.Logger"]:
-        if self.__verbose >= 1:
-            logger = logging.getLogger("lazyr")
-            logger.propagate = False
-            if not logger.hasHandlers():
-                logger.setLevel(logging.DEBUG)
-                sh = logging.StreamHandler()
-                fm = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
-                sh.setFormatter(fm)
-                logger.addHandler(sh)
-            logger.info("register --> %s", self.__name)
-            return logger
-        return None
+    def __set_verbose(self, verbose: int) -> None:
+        self.__verbose = verbose
+        if verbose >= 1 and self.__logger is None:
+            self.__logger_init()
+
+    def __logger_init(self) -> None:
+        logger = logging.getLogger("lazyr")
+        logger.propagate = False
+        if not logger.hasHandlers():
+            logger.setLevel(logging.DEBUG)
+            sh = logging.StreamHandler()
+            fm = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
+            sh.setFormatter(fm)
+            logger.addHandler(sh)
+        logger.info("register --> %s", self.__name)
+        self.__logger = logger
 
     def __debug_access(self, __name: str) -> None:
         if self.__verbose >= 2:
