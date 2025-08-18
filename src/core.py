@@ -251,7 +251,7 @@ class LazyModule:
             fm = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
             sh.setFormatter(fm)
             logger.addHandler(sh)
-        logger.info("register -> %s%s", self.__name, self.__get_frame_info(4))
+        logger.info("register -> %s%s", self.__name, self.__get_frame_info(5))
         self.__logger = logger
 
     def __debug_access(self, __name: str) -> None:
