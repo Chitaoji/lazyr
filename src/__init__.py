@@ -9,7 +9,7 @@ you are importing some modules that are hardly used but take a lot of time to be
 ## README.md
 
 * en [English](README.md)
-* zh_CN [简体中文](README.zh_CN.md)
+* zh_CN [Simplified Chinese](README.zh_CN.md)
 
 ## Usage
 ### Make a lazy module
@@ -93,17 +93,17 @@ happen to a lazy module during the runtime:
 
 ```py
 >>> _ = lazyr.register("matplotlib.pyplot", verbose=2)
-INFO:lazyr:register:matplotlib.pyplot
-INFO:lazyr:register:matplotlib
+INFO:lazyr:register -> matplotlib.pyplot
+INFO:lazyr:register -> matplotlib
 
 >>> import matplotlib.pyplot as plt
-DEBUG:lazyr:access:matplotlib.pyplot.__spec__
-DEBUG:lazyr:access:matplotlib.__spec__
-DEBUG:lazyr:access:matplotlib.pyplot
+DEBUG:lazyr:access -> matplotlib.pyplot.__spec__
+DEBUG:lazyr:access -> matplotlib.__spec__
+DEBUG:lazyr:access -> matplotlib.pyplot
 
 >>> plot = plt.plot
-DEBUG:lazyr:access:matplotlib.pyplot.plot
-INFO:lazyr:load:matplotlib.pyplot(.plot)
+DEBUG:lazyr:access -> matplotlib.pyplot.plot
+INFO:lazyr:load -> matplotlib.pyplot(.plot)
 ```
 
 ## See Also
@@ -116,8 +116,6 @@ INFO:lazyr:load:matplotlib.pyplot(.plot)
 ## License
 This project falls under the BSD 3-Clause License.
 
-"""
-
-from .__version__ import __version__
+"""from .__version__ import __version__
 from .core import *
 from .core import __all__

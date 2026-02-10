@@ -6,7 +6,7 @@ A lazily-imported module (or a lazy module, to be short) is not physically loade
 ## README.md
 
 * en [English](README.md)
-* zh_CN [简体中文](README.zh_CN.md)
+* zh_CN [Simplified Chinese](README.zh_CN.md)
 
 ## Installation
 
