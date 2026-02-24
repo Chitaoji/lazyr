@@ -3,10 +3,6 @@ Creates lazily-imported modules in a more readable and safer way.
 
 A lazily-imported module (or a lazy module, to be short) is not physically loaded in the Python environment until its attributes are being accessed. This could be useful when you are importing some modules that are hardly used but take a lot of time to be loaded.
 
-## README.md
-
-* en [English](README.md)
-* zh_CN [简体中文](README.zh_CN.md)
 
 ## Installation
 
@@ -38,6 +34,13 @@ There is also a simpler way to create a lazy module, but it may cause *type hint
 >>> np = lazyr.register("numpy")
 ```
 
+When registering multiple modules, you can specify more than one names:
+
+```py
+>>> lazyr.register("pandas", "scipy")
+[LazyModule(pandas), LazyModule(scipy)]
+```
+
 ### Check if a module is lazy
 
 Use `islazy()` to check if a module is lazy or not:
@@ -58,19 +61,20 @@ The lazy modules are not physically loaded until their attrubutes are imported o
 False
 ```
 
-### Ignore attributes
+### Lazy submodules
 
-You can make a module even lazier by setting the `ignore` parameter of `register()`, which specifies the names of submodules to be ignored. The ignored submodules will become lazy modules, too.
+When registering a lazy module, you may also register some of its submodules by specifying them in the `submodules` parameter of the `register()` function:
 
 ```py
->>> lazyr.register("pandas", ignore=["DataFrame", "Series"]) # make DataFrame and Series lazy modules
-LazyModule(pandas, ignore=['DataFrame', 'Series'])
+>>> lazyr.register("pandas", submodules=["DataFrame", "Series"]) # make DataFrame and Series lazy modules
+LazyModule(pandas, submodules=['DataFrame', 'Series'])
 ```
 
 The statement above has roughly the same effect as the following code piece:
 
 ```py
->>> _, _ = lazyr.register("pandas.DataFrame"), lazyr.register("pandas.Series")
+>>> lazyr.register("pandas.DataFrame", "pandas.Series")
+[LazyModule(pandas.DataFrame), LazyModule(pandas.Series)]
 ```
 
 ### List all lazy modules
@@ -79,7 +83,7 @@ Use `listall()` to check all the inactivated lazy modules in the system:
 
 ```py
 >>> lazyr.listall()
-[LazyModule(pandas, ignore=['Series', 'DataFrame']), LazyModule(pandas.DataFrame), LazyModule(pandas.Series)]
+[LazyModule(pandas, submodules=['Series', 'DataFrame']), LazyModule(pandas.DataFrame), LazyModule(pandas.Series)]
 ```
 
 ### Logging
@@ -87,18 +91,20 @@ Use `listall()` to check all the inactivated lazy modules in the system:
 Specify the `verbose` parameter when calling `register()` to see what exactly will happen to a lazy module during the runtime:
 
 ```py
->>> _ = lazyr.register("matplotlib.pyplot", verbose=2)
-INFO:lazyr:register --> matplotlib.pyplot
-INFO:lazyr:register --> matplotlib
+>>> with lazyr.setverbose(2):
+...     _ = lazyr.register("matplotlib.pyplot")
+...
+INFO:lazyr:register -> matplotlib.pyplot
+INFO:lazyr:register -> matplotlib
 
 >>> import matplotlib.pyplot as plt
-DEBUG:lazyr:access --> matplotlib.pyplot.__spec__
-DEBUG:lazyr:access --> matplotlib.__spec__
-DEBUG:lazyr:access --> matplotlib.pyplot
+DEBUG:lazyr:access -> matplotlib.pyplot.__spec__
+DEBUG:lazyr:access -> matplotlib.__spec__
+DEBUG:lazyr:access -> matplotlib.pyplot
 
 >>> plot = plt.plot
-DEBUG:lazyr:access --> matplotlib.pyplot.plot
-INFO:lazyr:load --> matplotlib.pyplot(.plot)
+DEBUG:lazyr:access -> matplotlib.pyplot.plot
+INFO:lazyr:load -> matplotlib.pyplot(.plot)
 ```
 
 ## See Also
@@ -112,6 +118,14 @@ INFO:lazyr:load --> matplotlib.pyplot(.plot)
 This project falls under the BSD 3-Clause License.
 
 ## History
+### v0.1.0
+* Requires `python>=3.12` from now on.
+* New function `setverbose()` to return a context manager for setting the default verbose value for `register()`.
+* Updated `register()`:
+    * from now on, parameter `name` will be positional only, and other parameter will be key-word only;
+    * parameter `name` can accept multiple module names now;
+    * renamed parameter `ignore` to `submodules`.
+
 ### v0.0.24
 * Updated `register()`: verbosity will be set to the argument `verbose` if lazy module exists.
 * Beautified the logging messages.
@@ -155,8 +169,8 @@ This project falls under the BSD 3-Clause License.
 
 ### v0.0.6
 * Improved logging:
-    * Created a separate logger named 'lazyr' for lazy modules;
-    * More detailed logs when `verbose` > 0.
+    * creates a separate logger named 'lazyr' for lazy modules;
+    * more detailed logs when `verbose` > 0.
 
 ### v0.0.4
 * `LazyModule` no longer activated by `_ipython_*()` or `_repr_*()` methods.

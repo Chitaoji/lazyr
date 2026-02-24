@@ -10,22 +10,30 @@ import importlib
 import logging
 import sys
 import traceback
-from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from types import ModuleType
 
-__all__ = ["register", "wakeup", "islazy", "listall", "LazyModule", "VERBOSE"]
+__all__ = [
+    "register",
+    "wakeup",
+    "islazy",
+    "listall",
+    "LazyModule",
+    "setverbose",
+    "VERBOSE",
+]
 
 VERBOSE = 0
 
 
 def register(
-    name: str,
-    package: Optional[str] = None,
-    ignore: Optional[List[str]] = None,
-    verbose: Optional[Literal[0, 1, 2, 3]] = None,
-) -> "ModuleType":
+    *name: str,
+    package: str | None = None,
+    submodules: list[str] | None = None,
+    verbose: Literal[0, 1, 2, 3] | None = None,
+) -> "ModuleType | list[ModuleType]":
     """
     Register a module as a lazy one. A lazy module is not physically loaded in the
     Python environment until its attributes are being accessed, or compulsively
@@ -33,17 +41,16 @@ def register(
 
     Parameters
     ----------
-    name : str
-        Name of the module to be registerd.
-    package : Optional[str], optional
+    *name : str
+        Name(s) of the module to be registerd.
+    package : str | None, optional
         Required when performing a relative import. It specifies the package to use
         as the anchor point from which to resolve the relative import to an absolute
         import, by default None.
-    ignore : Optional[List[str]], optional
-        Specifies the names of attributes to be ignored. The values of the ignored
-        attributes will be set to None, and a lazy module will no longer be activated
-        by the access to them.
-    verbose : Literal[0, 1, 2, 3], optional
+    submodules : list[str] | None, optional
+        Specifies the submodules to be set to lazy modules. Must be None when
+        registering multiple modules.
+    verbose : Literal[0, 1, 2, 3] | None, optional
         Specifies the level of verbosity for logging. It accepts values from 0 to 3,
         where:
             0 : disables logging;
@@ -54,29 +61,32 @@ def register(
 
     Returns
     -------
-    ModuleType
-        The lazy module.
-
-    Raises
-    ------
-    TypeError
-        Raised if an absolute import when the `package` argument is provided, or if a
-        relative import without the `package` argument.
+    ModuleType | list[ModuleType]
+        The lazy module, or a list of lazy modules when registering multiple modules.
 
     """
+    if len(name) == 0:
+        raise ValueError("must specify at least one module")
+    if len(name) > 1:
+        if submodules is not None:
+            raise ValueError(
+                "`submodules` must be None when registering multiple modules"
+            )
+        return [register(n, package=package, verbose=verbose) for n in name]
+
     if verbose is None:
         verbose = getattr(sys.modules[__name__.rpartition(".")[0]], "VERBOSE")
-    if (module_name := __join_module_name(name, package=package)) not in sys.modules:
+    if (module_name := __join_module_name(name[0], package=package)) not in sys.modules:
         sys.modules[module_name] = LazyModule(
-            module_name, ignore=ignore, verbose=verbose
+            module_name, submodules=submodules, verbose=verbose
         )
     elif isinstance(m := sys.modules[module_name], LazyModule):
-        getattr(m, "_LazyModule__ignore")(ignore)
+        getattr(m, "_LazyModule__ignore")(submodules)
         getattr(m, "_LazyModule__set_verbose")(verbose)
     return sys.modules[module_name]
 
 
-def __join_module_name(name: str, package: Optional[str] = None) -> None:
+def __join_module_name(name: str, package: str | None = None) -> None:
     if name.startswith("."):
         if package is None:
             frame = sys._getframe(2)  # pylint: disable=protected-access
@@ -106,7 +116,7 @@ def wakeup(module: "ModuleType") -> None:
         getattr(module, "_LazyModule__wakeup")()
 
 
-def islazy(module: Union["ModuleType", str]) -> bool:
+def islazy(module: "ModuleType | str") -> bool:
     """
     Checks if a module is lazy or not. Returns False if received a `LazyModule`
     object that has not been activated yet, otherwise returns True. If only to
@@ -114,7 +124,7 @@ def islazy(module: Union["ModuleType", str]) -> bool:
 
     Parameters
     ----------
-    module : Union[ModuleType, str]
+    module : ModuleType | str
         Can be either a `ModuleType` object or a string representing the name of
         a module.
 
@@ -138,21 +148,57 @@ def islazy(module: Union["ModuleType", str]) -> bool:
     return False
 
 
-def listall() -> List["LazyModule"]:
+def listall() -> list["LazyModule"]:
     """
     List all the inactivated lazy modules.
 
     Returns
     -------
-    List[LazyModule]
+    list[LazyModule]
         List of lazy modules.
 
     """
-    module_list: List["LazyModule"] = []
+    module_list: list["LazyModule"] = []
     for m in sys.modules.values():
         if isinstance(m, LazyModule) and not bool(getattr(m, "_LazyModule__module")):
             module_list.append(m)
     return module_list
+
+
+def setverbose(verbose: Literal[0, 1, 2, 3]) -> "_VerboseContextManager":
+    """
+    Return a context manager for setting the default verbose value for `register()`.
+
+    Parameters
+    ----------
+    verbose : Literal[0, 1, 2, 3]
+        Defaullt verbose value for `register()`.
+
+    Returns
+    -------
+    _VerboseContextManager
+        Context manager.
+
+    """
+
+    return _VerboseContextManager(verbose)
+
+
+class _VerboseContextManager:
+    def __init__(self, verbose: Literal[0, 1, 2, 3]) -> None:
+        self.verbose = verbose
+        self.original_verbose = 0
+
+    def __enter__(self) -> None:
+        self.original_verbose = getattr(
+            sys.modules[__name__.rpartition(".")[0]], "VERBOSE"
+        )
+        setattr(sys.modules[__name__.rpartition(".")[0]], "VERBOSE", self.verbose)
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        setattr(
+            sys.modules[__name__.rpartition(".")[0]], "VERBOSE", self.original_verbose
+        )
 
 
 class LazyModule:
@@ -170,30 +216,30 @@ class LazyModule:
     def __init__(
         self,
         name: str,
-        ignore: Optional[List[str]] = None,
+        submodules: list[str] | None = None,
         verbose: Literal[0, 1, 2, 3] = 0,
     ) -> None:
         sys.modules[name] = None
 
         self.__name = name
-        self.__ignored_attrs: Set[str] = set()
-        self.__logger: Optional["logging.Logger"] = None
-        self.__module: Optional[ModuleType] = None
+        self.__submodules: set[str] = set()
+        self.__logger: logging.Logger | None = None
+        self.__module: ModuleType | None = None
         self.__set_verbose(verbose)
-        self.__ignore(ignore)
+        self.__ignore(submodules)
 
         parent, _, suffix = self.__name.rpartition(".")
         if parent:
-            register(parent, ignore=[suffix], verbose=verbose)
+            register(parent, submodules=[suffix], verbose=verbose)
 
     def __repr__(self) -> str:
         if self.__module:
             return repr(self.__module)
-        if self.__ignored_attrs:
-            ignore_repr = f", ignore={list(self.__ignored_attrs)}"
+        if self.__submodules:
+            subrepr = f", submodules={list(self.__submodules)}"
         else:
-            ignore_repr = ""
-        return f"{self.__class__.__name__}({self.__name}{ignore_repr})"
+            subrepr = ""
+        return f"{self.__class__.__name__}({self.__name}{subrepr})"
 
     def __getattr__(self, __name: str) -> Any:
         self.__debug_access(__name)
@@ -203,7 +249,7 @@ class LazyModule:
                     return None
             elif __name.startswith(self.__skipped_startswith):
                 return None
-            elif __name in self.__ignored_attrs:
+            elif __name in self.__submodules:
                 return sys.modules[f"{self.__name}.{__name}"]
             self.__wakeup(__name)
         return getattr(self.__module, __name)
@@ -214,16 +260,16 @@ class LazyModule:
             self.__wakeup("__call__")
         return self.__module(*args, **kwargs)
 
-    def __wakeup(self, __name: Optional[str] = None) -> None:
+    def __wakeup(self, __name: str | None = None) -> None:
         self.__import_module()
         self.__info_wakeup("__wakeup" if __name is None else __name)
 
-    def __ignore(self, ignore: Optional[List[str]] = None) -> None:
-        if ignore is not None:
-            for submodule in ignore:
-                if not submodule in self.__ignored_attrs:
+    def __ignore(self, submodules: list[str] | None = None) -> None:
+        if submodules is not None:
+            for submodule in submodules:
+                if submodule not in self.__submodules:
                     register(f"{self.__name}.{submodule}", verbose=self.__verbose)
-                    self.__ignored_attrs.add(submodule.partition(".")[0])
+                    self.__submodules.add(submodule.partition(".")[0])
 
     def __import_module(self) -> None:
         for name in _get_family(self.__name):
@@ -279,8 +325,8 @@ class LazyModule:
         )
 
 
-def _get_family(name: str) -> List[str]:
-    names: List[str] = [tmp := (splits := name.split("."))[0]]
+def _get_family(name: str) -> list[str]:
+    names: list[str] = [tmp := (splits := name.split("."))[0]]
     for i in splits[1:]:
         names.append(tmp := f"{tmp}.{i}")
     return names
