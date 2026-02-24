@@ -113,7 +113,7 @@ This project falls under the BSD 3-Clause License.
 * New function `setverbose()` to return a context manager for setting the default verbose value for `register()`.
 * Updated `register()`:
     * from now on, parameter `name` will be positional only, and other parameter will be key-word only;
-    * parameter `name` can accept list of names now.
+    * parameter `name` can accept multiple module names now.
 
 ### v0.0.24
 * Updated `register()`: verbosity will be set to the argument `verbose` if lazy module exists.
