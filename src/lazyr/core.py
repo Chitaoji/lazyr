@@ -27,26 +27,29 @@ __all__ = [
 
 VERBOSE = 0
 
+
 @overload
 def register(
     name: str,
+    /,
+    *,
     package: str | None = None,
     ignore: list[str] | None = None,
     verbose: Literal[0, 1, 2, 3] | None = None,
 ) -> "ModuleType": ...
-
-
 @overload
 def register(
     name: list[str],
+    /,
+    *,
     package: str | None = None,
-    ignore: list[str] | None = None,
+    ignore: None = None,
     verbose: Literal[0, 1, 2, 3] | None = None,
 ) -> list["ModuleType"]: ...
-
-
 def register(
     name: str | list[str],
+    /,
+    *,
     package: str | None = None,
     ignore: list[str] | None = None,
     verbose: Literal[0, 1, 2, 3] | None = None,
@@ -86,29 +89,18 @@ def register(
     TypeError
         Raised if an absolute import when the `package` argument is provided, or if a
         relative import without the `package` argument.
-
     ValueError
         Raised if `name` is a list containing more than one module name while `ignore`
         is not None.
 
     """
+    if isinstance(name, list) and len(name) == 1:
+        name = name[0]
     if isinstance(name, list):
-        if len(name) > 1 and ignore is not None:
+        if ignore is not None:
             raise ValueError("`ignore` must be None when registering multiple modules")
-        return [
-            _register_one(n, package=package, ignore=ignore, verbose=verbose)
-            for n in name
-        ]
+        return [register(n, package=package, verbose=verbose) for n in name]
 
-    return _register_one(name, package=package, ignore=ignore, verbose=verbose)
-
-
-def _register_one(
-    name: str,
-    package: str | None = None,
-    ignore: list[str] | None = None,
-    verbose: Literal[0, 1, 2, 3] | None = None,
-) -> "ModuleType":
     if verbose is None:
         verbose = getattr(sys.modules[__name__.rpartition(".")[0]], "VERBOSE")
     if (module_name := __join_module_name(name, package=package)) not in sys.modules:

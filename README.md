@@ -111,6 +111,9 @@ This project falls under the BSD 3-Clause License.
 ### v0.1.0
 * Requires `python>=3.12` from now on.
 * New function `setverbose()` to return a context manager for setting the default verbose value for `register()`.
+* Updated `register()`:
+    * from now on, parameter `name` will be positional only, and other parameter will be key-word only;
+    * parameter `name` can accept list of names now.
 
 ### v0.0.24
 * Updated `register()`: verbosity will be set to the argument `verbose` if lazy module exists.
@@ -155,8 +158,8 @@ This project falls under the BSD 3-Clause License.
 
 ### v0.0.6
 * Improved logging:
-    * Created a separate logger named 'lazyr' for lazy modules;
-    * More detailed logs when `verbose` > 0.
+    * creates a separate logger named 'lazyr' for lazy modules;
+    * more detailed logs when `verbose` > 0.
 
 ### v0.0.4
 * `LazyModule` no longer activated by `_ipython_*()` or `_repr_*()` methods.
