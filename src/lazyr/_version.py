@@ -1,5 +1,3 @@
 """Version file."""
 
-VERSION = (0, 0, 24)
-
-__version__ = ".".join(map(str, VERSION))
+__version__ = "0.1.0"
