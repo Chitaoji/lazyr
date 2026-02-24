@@ -10,7 +10,7 @@ import importlib
 import logging
 import sys
 import traceback
-from typing import TYPE_CHECKING, Any, List, Literal, Optional, Set, Union
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -22,9 +22,9 @@ VERBOSE = 0
 
 def register(
     name: str,
-    package: Optional[str] = None,
-    ignore: Optional[List[str]] = None,
-    verbose: Optional[Literal[0, 1, 2, 3]] = None,
+    package: str | None = None,
+    ignore: list[str] | None = None,
+    verbose: Literal[0, 1, 2, 3] | None = None,
 ) -> "ModuleType":
     """
     Register a module as a lazy one. A lazy module is not physically loaded in the
@@ -35,14 +35,14 @@ def register(
     ----------
     name : str
         Name of the module to be registerd.
-    package : Optional[str], optional
+    package : str | None, optional
         Required when performing a relative import. It specifies the package to use
         as the anchor point from which to resolve the relative import to an absolute
         import, by default None.
-    ignore : Optional[List[str]], optional
+    ignore : list[str] | None, optional
         Specifies the names of attributes to be ignored. The ignored attributes will be
         set to lazy modules, too.
-    verbose : Literal[0, 1, 2, 3], optional
+    verbose : Literal[0, 1, 2, 3] | None, optional
         Specifies the level of verbosity for logging. It accepts values from 0 to 3,
         where:
             0 : disables logging;
@@ -75,7 +75,7 @@ def register(
     return sys.modules[module_name]
 
 
-def __join_module_name(name: str, package: Optional[str] = None) -> None:
+def __join_module_name(name: str, package: str | None = None) -> None:
     if name.startswith("."):
         if package is None:
             frame = sys._getframe(2)  # pylint: disable=protected-access
@@ -105,7 +105,7 @@ def wakeup(module: "ModuleType") -> None:
         getattr(module, "_LazyModule__wakeup")()
 
 
-def islazy(module: Union["ModuleType", str]) -> bool:
+def islazy(module: "ModuleType | str") -> bool:
     """
     Checks if a module is lazy or not. Returns False if received a `LazyModule`
     object that has not been activated yet, otherwise returns True. If only to
@@ -113,7 +113,7 @@ def islazy(module: Union["ModuleType", str]) -> bool:
 
     Parameters
     ----------
-    module : Union[ModuleType, str]
+    module : ModuleType | str
         Can be either a `ModuleType` object or a string representing the name of
         a module.
 
@@ -137,17 +137,17 @@ def islazy(module: Union["ModuleType", str]) -> bool:
     return False
 
 
-def listall() -> List["LazyModule"]:
+def listall() -> list["LazyModule"]:
     """
     List all the inactivated lazy modules.
 
     Returns
     -------
-    List[LazyModule]
+    list[LazyModule]
         List of lazy modules.
 
     """
-    module_list: List["LazyModule"] = []
+    module_list: list["LazyModule"] = []
     for m in sys.modules.values():
         if isinstance(m, LazyModule) and not bool(getattr(m, "_LazyModule__module")):
             module_list.append(m)
@@ -169,15 +169,15 @@ class LazyModule:
     def __init__(
         self,
         name: str,
-        ignore: Optional[List[str]] = None,
+        ignore: list[str] | None = None,
         verbose: Literal[0, 1, 2, 3] = 0,
     ) -> None:
         sys.modules[name] = None
 
         self.__name = name
-        self.__ignored_attrs: Set[str] = set()
-        self.__logger: Optional["logging.Logger"] = None
-        self.__module: Optional[ModuleType] = None
+        self.__ignored_attrs: set[str] = set()
+        self.__logger: logging.Logger | None = None
+        self.__module: ModuleType | None = None
         self.__set_verbose(verbose)
         self.__ignore(ignore)
 
@@ -213,11 +213,11 @@ class LazyModule:
             self.__wakeup("__call__")
         return self.__module(*args, **kwargs)
 
-    def __wakeup(self, __name: Optional[str] = None) -> None:
+    def __wakeup(self, __name: str | None = None) -> None:
         self.__import_module()
         self.__info_wakeup("__wakeup" if __name is None else __name)
 
-    def __ignore(self, ignore: Optional[List[str]] = None) -> None:
+    def __ignore(self, ignore: list[str] | None = None) -> None:
         if ignore is not None:
             for submodule in ignore:
                 if submodule not in self.__ignored_attrs:
@@ -278,8 +278,8 @@ class LazyModule:
         )
 
 
-def _get_family(name: str) -> List[str]:
-    names: List[str] = [tmp := (splits := name.split("."))[0]]
+def _get_family(name: str) -> list[str]:
+    names: list[str] = [tmp := (splits := name.split("."))[0]]
     for i in splits[1:]:
         names.append(tmp := f"{tmp}.{i}")
     return names
