@@ -110,6 +110,7 @@ This project falls under the BSD 3-Clause License.
 ## History
 ### v0.1.0
 * Requires `python>=3.12` from now on.
+* New function `setverbose()` to return a context manager for setting the default verbose value for `register()`.
 
 ### v0.0.24
 * Updated `register()`: verbosity will be set to the argument `verbose` if lazy module exists.

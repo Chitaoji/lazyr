@@ -15,7 +15,15 @@ from typing import TYPE_CHECKING, Any, Literal
 if TYPE_CHECKING:
     from types import ModuleType
 
-__all__ = ["register", "wakeup", "islazy", "listall", "LazyModule", "VERBOSE"]
+__all__ = [
+    "register",
+    "wakeup",
+    "islazy",
+    "listall",
+    "LazyModule",
+    "setverbose",
+    "VERBOSE",
+]
 
 VERBOSE = 0
 
@@ -152,6 +160,42 @@ def listall() -> list["LazyModule"]:
         if isinstance(m, LazyModule) and not bool(getattr(m, "_LazyModule__module")):
             module_list.append(m)
     return module_list
+
+
+def setverbose(verbose: Literal[0, 1, 2, 3]) -> "_VerboseContextManager":
+    """
+    Return a context manager for setting the default verbose value for `register()`.
+
+    Parameters
+    ----------
+    verbose : Literal[0, 1, 2, 3]
+        Defaullt verbose value for `register()`.
+
+    Returns
+    -------
+    _VerboseContextManager
+        Context manager.
+
+    """
+
+    return _VerboseContextManager(verbose)
+
+
+class _VerboseContextManager:
+    def __init__(self, verbose: Literal[0, 1, 2, 3]) -> None:
+        self.verbose = verbose
+        self.original_verbose = 0
+
+    def __enter__(self) -> None:
+        self.original_verbose = getattr(
+            sys.modules[__name__.rpartition(".")[0]], "VERBOSE"
+        )
+        setattr(sys.modules[__name__.rpartition(".")[0]], "VERBOSE", self.verbose)
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        setattr(
+            sys.modules[__name__.rpartition(".")[0]], "VERBOSE", self.original_verbose
+        )
 
 
 class LazyModule:
