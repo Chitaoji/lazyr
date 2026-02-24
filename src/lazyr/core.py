@@ -10,7 +10,7 @@ import importlib
 import logging
 import sys
 import traceback
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any, Literal, overload
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -27,13 +27,30 @@ __all__ = [
 
 VERBOSE = 0
 
-
+@overload
 def register(
     name: str,
     package: str | None = None,
     ignore: list[str] | None = None,
     verbose: Literal[0, 1, 2, 3] | None = None,
-) -> "ModuleType":
+) -> "ModuleType": ...
+
+
+@overload
+def register(
+    name: list[str],
+    package: str | None = None,
+    ignore: list[str] | None = None,
+    verbose: Literal[0, 1, 2, 3] | None = None,
+) -> list["ModuleType"]: ...
+
+
+def register(
+    name: str | list[str],
+    package: str | None = None,
+    ignore: list[str] | None = None,
+    verbose: Literal[0, 1, 2, 3] | None = None,
+) -> "ModuleType | list[ModuleType]":
     """
     Register a module as a lazy one. A lazy module is not physically loaded in the
     Python environment until its attributes are being accessed, or compulsively
@@ -41,8 +58,8 @@ def register(
 
     Parameters
     ----------
-    name : str
-        Name of the module to be registerd.
+    name : str | list[str]
+        Name of the module to be registerd. It can also be a list of module names.
     package : str | None, optional
         Required when performing a relative import. It specifies the package to use
         as the anchor point from which to resolve the relative import to an absolute
@@ -61,8 +78,8 @@ def register(
 
     Returns
     -------
-    ModuleType
-        The lazy module.
+    ModuleType | list[ModuleType]
+        The lazy module, or a list of lazy modules when `name` is a list.
 
     Raises
     ------
@@ -70,7 +87,28 @@ def register(
         Raised if an absolute import when the `package` argument is provided, or if a
         relative import without the `package` argument.
 
+    ValueError
+        Raised if `name` is a list containing more than one module name while `ignore`
+        is not None.
+
     """
+    if isinstance(name, list):
+        if len(name) > 1 and ignore is not None:
+            raise ValueError("`ignore` must be None when registering multiple modules")
+        return [
+            _register_one(n, package=package, ignore=ignore, verbose=verbose)
+            for n in name
+        ]
+
+    return _register_one(name, package=package, ignore=ignore, verbose=verbose)
+
+
+def _register_one(
+    name: str,
+    package: str | None = None,
+    ignore: list[str] | None = None,
+    verbose: Literal[0, 1, 2, 3] | None = None,
+) -> "ModuleType":
     if verbose is None:
         verbose = getattr(sys.modules[__name__.rpartition(".")[0]], "VERBOSE")
     if (module_name := __join_module_name(name, package=package)) not in sys.modules:
