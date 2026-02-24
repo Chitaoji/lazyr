@@ -31,7 +31,7 @@ VERBOSE = 0
 def register(
     *name: str,
     package: str | None = None,
-    ignore: list[str] | None = None,
+    submodules: list[str] | None = None,
     verbose: Literal[0, 1, 2, 3] | None = None,
 ) -> "ModuleType | list[ModuleType]":
     """
@@ -47,9 +47,9 @@ def register(
         Required when performing a relative import. It specifies the package to use
         as the anchor point from which to resolve the relative import to an absolute
         import, by default None.
-    ignore : list[str] | None, optional
-        Specifies the names of attributes to be ignored. The ignored attributes will be
-        set to lazy modules, too.
+    submodules : list[str] | None, optional
+        Specifies the submodules to be set to lazy modules. Must be None when
+        registering multiple modules.
     verbose : Literal[0, 1, 2, 3] | None, optional
         Specifies the level of verbosity for logging. It accepts values from 0 to 3,
         where:
@@ -68,18 +68,20 @@ def register(
     if len(name) == 0:
         raise ValueError("must specify at least one module")
     if len(name) > 1:
-        if ignore is not None:
-            raise ValueError("`ignore` must be None when registering multiple modules")
+        if submodules is not None:
+            raise ValueError(
+                "`submodules` must be None when registering multiple modules"
+            )
         return [register(n, package=package, verbose=verbose) for n in name]
 
     if verbose is None:
         verbose = getattr(sys.modules[__name__.rpartition(".")[0]], "VERBOSE")
     if (module_name := __join_module_name(name[0], package=package)) not in sys.modules:
         sys.modules[module_name] = LazyModule(
-            module_name, ignore=ignore, verbose=verbose
+            module_name, submodules=submodules, verbose=verbose
         )
     elif isinstance(m := sys.modules[module_name], LazyModule):
-        getattr(m, "_LazyModule__ignore")(ignore)
+        getattr(m, "_LazyModule__ignore")(submodules)
         getattr(m, "_LazyModule__set_verbose")(verbose)
     return sys.modules[module_name]
 
@@ -214,30 +216,30 @@ class LazyModule:
     def __init__(
         self,
         name: str,
-        ignore: list[str] | None = None,
+        submodules: list[str] | None = None,
         verbose: Literal[0, 1, 2, 3] = 0,
     ) -> None:
         sys.modules[name] = None
 
         self.__name = name
-        self.__ignored_attrs: set[str] = set()
+        self.__submodules: set[str] = set()
         self.__logger: logging.Logger | None = None
         self.__module: ModuleType | None = None
         self.__set_verbose(verbose)
-        self.__ignore(ignore)
+        self.__ignore(submodules)
 
         parent, _, suffix = self.__name.rpartition(".")
         if parent:
-            register(parent, ignore=[suffix], verbose=verbose)
+            register(parent, submodules=[suffix], verbose=verbose)
 
     def __repr__(self) -> str:
         if self.__module:
             return repr(self.__module)
-        if self.__ignored_attrs:
-            ignore_repr = f", ignore={list(self.__ignored_attrs)}"
+        if self.__submodules:
+            subrepr = f", submodules={list(self.__submodules)}"
         else:
-            ignore_repr = ""
-        return f"{self.__class__.__name__}({self.__name}{ignore_repr})"
+            subrepr = ""
+        return f"{self.__class__.__name__}({self.__name}{subrepr})"
 
     def __getattr__(self, __name: str) -> Any:
         self.__debug_access(__name)
@@ -247,7 +249,7 @@ class LazyModule:
                     return None
             elif __name.startswith(self.__skipped_startswith):
                 return None
-            elif __name in self.__ignored_attrs:
+            elif __name in self.__submodules:
                 return sys.modules[f"{self.__name}.{__name}"]
             self.__wakeup(__name)
         return getattr(self.__module, __name)
@@ -262,12 +264,12 @@ class LazyModule:
         self.__import_module()
         self.__info_wakeup("__wakeup" if __name is None else __name)
 
-    def __ignore(self, ignore: list[str] | None = None) -> None:
-        if ignore is not None:
-            for submodule in ignore:
-                if submodule not in self.__ignored_attrs:
+    def __ignore(self, submodules: list[str] | None = None) -> None:
+        if submodules is not None:
+            for submodule in submodules:
+                if submodule not in self.__submodules:
                     register(f"{self.__name}.{submodule}", verbose=self.__verbose)
-                    self.__ignored_attrs.add(submodule.partition(".")[0])
+                    self.__submodules.add(submodule.partition(".")[0])
 
     def __import_module(self) -> None:
         for name in _get_family(self.__name):
