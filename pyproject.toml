@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "lazyr"
 version = "0.1.0"
 dependencies = ["loggings"]
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 authors = [
   {name = "Chitaoji", email = "2360742040@qq.com"},
 ]
@@ -20,7 +20,7 @@ license-files = ["LICENSE"]
 keywords = ["config"]
 classifiers = [
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.12"
+  "Programming Language :: Python :: 3.13"
 ]
 
 [project.urls]
