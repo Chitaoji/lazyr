@@ -7,10 +7,11 @@ NOTE: this module is private. All functions and objects are available in the mai
 """
 
 import importlib
-import logging
 import sys
 import traceback
 from typing import TYPE_CHECKING, Any, Literal
+
+import loggings
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -223,7 +224,7 @@ class LazyModule:
 
         self.__name = name
         self.__submodules: set[str] = set()
-        self.__logger: logging.Logger | None = None
+        self.__logger = None
         self.__module: ModuleType | None = None
         self.__set_verbose(verbose)
         self.__ignore(submodules)
@@ -289,14 +290,7 @@ class LazyModule:
             self.__logger_init()
 
     def __logger_init(self) -> None:
-        logger = logging.getLogger("lazyr")
-        logger.propagate = False
-        if not logger.hasHandlers():
-            logger.setLevel(logging.DEBUG)
-            sh = logging.StreamHandler()
-            fm = logging.Formatter("%(levelname)s:%(name)s:%(message)s")
-            sh.setFormatter(fm)
-            logger.addHandler(sh)
+        logger = loggings.get_logger("lazyr", level=loggings.DEBUG)
         logger.info("register -> %s%s", self.__name, self.__get_frame_info(5))
         self.__logger = logger
 
