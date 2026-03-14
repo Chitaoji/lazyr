@@ -119,9 +119,11 @@ This project falls under the BSD 3-Clause License.
 
 ## History
 ### v0.1.1
+* Replaced internal logging implementation with the `loggings` package.
+
 
 ### v0.1.0
-* Requires `python>=3.12` from now on.
+* Requires `python>=3.13` from now on.
 * New function `setverbose()` to return a context manager for setting the default verbose value for `register()`.
 * Updated `register()`:
     * from now on, parameter `name` will be positional only, and other parameter will be key-word only;
