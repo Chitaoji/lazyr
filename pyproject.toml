@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "lazyr"
 version = "0.1.0"
-dependencies = []
+dependencies = ["loggings"]
 requires-python = ">=3.12"
 authors = [
   {name = "Chitaoji", email = "2360742040@qq.com"},
